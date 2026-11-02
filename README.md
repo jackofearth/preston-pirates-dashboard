@@ -12,7 +12,7 @@ To run it yourself: `python3 scripts/build_stats.py`.
 
 ## Fixtures, results and ladder (GameDay)
 
-`.github/workflows/refresh-gameday.yml` runs `scripts/scrape_gameday.py` every 3 hours and commits `data/gameday.json`. If GameDay blocks GitHub's servers the job fails and the old data stays. You can also run the workflow by hand from the Actions tab.
+`.github/workflows/refresh-gameday.yml` runs `scripts/scrape_gameday.py` twice a day (about 8am and 8pm Melbourne time) and commits `data/gameday.json`. If GameDay blocks GitHub's servers the job fails and the old data stays. You can also run the workflow by hand from the Actions tab.
 
 The scraper reads the match list GameDay embeds in the page (`var matches = [...]`), not the rendered text. "Washed Out" matches count as draws in the record; 0-0 results with a winner are shown as forfeits.
 

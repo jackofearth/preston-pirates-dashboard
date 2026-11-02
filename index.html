@@ -76,6 +76,7 @@ h3{font:600 22px/1.2 var(--font-head);margin:0 0 8px;letter-spacing:.02em}
 .next .vs{font:700 clamp(30px,7vw,46px)/1 var(--font-head);margin:0 0 8px}
 .next .vs small{font:500 23px var(--font-head);color:var(--muted);margin-right:6px}
 .next a{color:var(--ink)}
+.soon{border-style:dashed}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .chip{display:inline-flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:15px;color:var(--ink)}
 .chip.w{border-color:#2f6b55;color:var(--good)} .chip.l{border-color:#7a2a30;color:var(--red-ink)} .chip.d{color:var(--muted)}
@@ -321,7 +322,7 @@ VIEWS.overview=()=>{
       <div class="fig"><b class="num">${us?us.for:"–"}</b><span>runs for</span></div>
       <div class="fig"><b class="num">${us?us.against:"–"}</b><span>runs against</span></div>
       <div class="fig"><b class="num">${us?(us.for-us.against>0?"+":"")+(us.for-us.against):"–"}</b><span>run diff</span></div></div>
-      ${r.wo?`<p class="small muted" style="margin:12px 0 0">The ${r.wo>1?r.wo+" draws were":"draw was"} a washed-out game.</p>`:""}</section>
+</section>
     ${lastHtml}
     <section class="panel"><h3>Team batting</h3><div class="figs">
       <div class="fig"><b class="num">${fmt("AVG",B.AVG)}</b><span>AVG</span></div>
@@ -333,6 +334,7 @@ VIEWS.overview=()=>{
       <div class="fig"><b class="num">${fmt("S%",P["S%"])}%</b><span>strike %</span></div>
       <div class="fig"><b class="num">${fmt("K/BB",P.SO/P.BB)}</b><span>K/BB</span></div>
       <div class="fig"><b class="num">${P.SO}</b><span>strikeouts</span></div></div></section>
+    <section class="panel span2 soon"><h3>Lineup Foundry</h3><p class="muted" style="margin:0">Our lineup app is coming soon.</p></section>
   </div>`;
 };
 

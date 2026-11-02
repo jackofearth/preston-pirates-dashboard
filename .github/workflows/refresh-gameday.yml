@@ -2,7 +2,7 @@ name: Refresh GameDay data
 
 on:
   schedule:
-    - cron: "0 */3 * * *"   # every 3 hours
+    - cron: "7 9,21 * * *"   # twice a day: 8:07am and 8:07pm Melbourne time (UTC+11)
   workflow_dispatch:
 
 permissions:
