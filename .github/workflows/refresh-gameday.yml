@@ -1,0 +1,29 @@
+name: Refresh GameDay data
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"   # every 3 hours
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install playwright && playwright install --with-deps chromium
+      - run: python3 scripts/scrape_gameday.py
+      - name: Rebuild stats warnings (GC vs GameDay)
+        run: python3 scripts/build_stats.py
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/gameday.json data/stats.json
+          git diff --cached --quiet || git commit -m "Refresh GameDay data"
+          git push
