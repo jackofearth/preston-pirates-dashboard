@@ -148,7 +148,7 @@ def scrape_venues(browser, links):
             page = browser.new_page()
             page.goto(url, wait_until="domcontentloaded", timeout=45000)
             maps = page.eval_on_selector_all("a[href*='maps.google.com']", "as => as.map(a => a.href)")
-            text = page.inner_text("main")
+            text = page.inner_text("body")
             m = re.search(r"Venue Address\s*(.+?)\s*Map Reference", text, re.S)
             page.close()
             if maps:
@@ -168,8 +168,14 @@ def main():
         pg = b.new_page(user_agent=("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
                                     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"))
         pg.goto(ROUNDS_URL, wait_until="networkidle", timeout=60000)
-        pg.wait_for_selector("main", timeout=30000)
-        main_text = pg.inner_text("main")
+        try:
+            pg.wait_for_selector("text=MATCH CENTRE", timeout=45000)
+        except Exception:
+            pass
+        main_text = pg.inner_text("body")
+        if "MATCH CENTRE" not in main_text:
+            print("DEBUG: fixtures page had no matches. title=%r url=%s" % (pg.title(), pg.url))
+            print("DEBUG: first 600 chars of page text:\n" + main_text[:600])
         uploaded = re.search(r"Last Uploaded:\s*(.+?)\s*\|", main_text)
         matches = parse_matches(main_text)
         venue_links = pg.eval_on_selector_all(
