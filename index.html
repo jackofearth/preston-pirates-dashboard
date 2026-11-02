@@ -323,10 +323,10 @@ VIEWS.overview=()=>{
       <div class="fig"><b class="num">${fmt("OPS",B.OPS)}</b><span>OPS</span></div>
       <div class="fig"><b class="num">${fmt("QAB%",B["QAB%"])}%</b><span>QAB%</span></div></div></section>
     <section class="panel"><h3>Team pitching</h3><div class="figs">
-      <div class="fig"><b class="num">${fmt("ERA",P.ERA)}</b><span>ERA</span></div>
-      <div class="fig"><b class="num">${fmt("WHIP",P.WHIP)}</b><span>WHIP</span></div>
+      <div class="fig"><b class="num">${fmt("FIP",P.FIP)}</b><span>FIP</span></div>
       <div class="fig"><b class="num">${fmt("S%",P["S%"])}%</b><span>strike %</span></div>
-      <div class="fig"><b class="num">${P.BB} / ${P.SO}</b><span>BB / K</span></div></div></section>
+      <div class="fig"><b class="num">${fmt("K/BB",P.SO/P.BB)}</b><span>K/BB</span></div>
+      <div class="fig"><b class="num">${P.SO}</b><span>strikeouts</span></div></div></section>
     <section class="panel span2"><h3>Batting leaders</h3><div class="figs">${lead}</div>
       <button class="linkbtn" data-go="leaders">All leaderboards</button></section>
   </div>`;
