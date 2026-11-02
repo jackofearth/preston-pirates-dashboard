@@ -1,9 +1,6 @@
 {
-  "team": "Preston",
-  "teamLong": "Preston Pirates",
-  "competition": "Regional North East",
-  "season": "2026/27",
-  "washedOut": [
-    { "round": 4, "note": "Washed out. Counted as a draw in GameChanger, not on the GameDay ladder." }
-  ]
+ "team": "Preston",
+ "teamLong": "Preston Pirates",
+ "competition": "Regional North East",
+ "season": "2026/27"
 }

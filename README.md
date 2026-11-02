@@ -14,11 +14,7 @@ To run it yourself: `python3 scripts/build_stats.py`.
 
 `.github/workflows/refresh-gameday.yml` runs `scripts/scrape_gameday.py` every 3 hours and commits `data/gameday.json`. If GameDay blocks GitHub's servers the job fails and the old data stays. You can also run the workflow by hand from the Actions tab.
 
-Two 0-0 games without a "FINAL" are credited as wins on the GameDay ladder. They carry a `ladder_credit` field in `gameday.json`, which the scraper preserves.
-
-## Washed-out rounds
-
-List them in `data/config.json` under `washedOut`.
+The scraper reads the match list GameDay embeds in the page (`var matches = [...]`), not the rendered text. "Washed Out" matches count as draws in the record; 0-0 results with a winner are shown as forfeits.
 
 ## Publishing
 

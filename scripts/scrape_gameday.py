@@ -10,6 +10,7 @@ browser). Ladder is a plain HTML table. Needs:  pip install playwright && playwr
 If GameDay refuses the request the script exits non-zero and leaves the old file alone.
 """
 import datetime as dt, json, re, sys
+from html import unescape
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -21,6 +22,43 @@ LADDER_URL = BASE + "&a=LADDER"
 
 DATE_RE = re.compile(r"^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), (\w+) (\d+), (\d{4})$")
 TIME_RE = re.compile(r"^\d{1,2}:\d{2} (AM|PM)$")
+
+
+def parse_embedded(html):
+    """GameDay embeds every match as JSON in the page source: `var matches = [...]`.
+    Reading that is far more reliable than scraping rendered text."""
+    i = html.find("var matches = ")
+    if i < 0:
+        return []
+    raw, _ = json.JSONDecoder().raw_decode(html[i + len("var matches = "):])
+    clean = lambda s: " ".join(unescape(str(s or "")).replace("\xa0", " ").split())
+    out = []
+    for x in raw:
+        if x.get("isBye"):
+            continue
+        status_txt = clean(x.get("MatchStatus"))
+        scored = x.get("FinalisationString") == "FINAL"
+        hs, as_ = (int(x["HomeScore"]), int(x["AwayScore"])) if scored and str(x.get("HomeScore", "")).isdigit() else (None, None)
+        m = {"date": x["TimeDateRaw"][:10], "time": clean(x.get("TimeRaw")) or clean(x.get("Time")),
+             "home": clean(x["HomeName"]), "away": clean(x["AwayName"]),
+             "home_score": hs, "away_score": as_, "venue": clean(x.get("VenueName")),
+             "venue_url": None}
+        vm = re.search(r"venueid(?:%3D|=)(\d+)", str(x.get("VenueEsc", "")) + str(x.get("Venue", "")))
+        if vm:
+            m["venue_id"] = vm.group(1)
+        if not scored:
+            m["status"] = "upcoming"
+        elif status_txt == "Results Entered":
+            m["status"] = "final"
+            if hs == 0 and as_ == 0 and x.get("WinnerID"):
+                # recorded as 'def.' with no runs: a forfeit; ladder gives the winner 9-0
+                m["forfeit_winner"] = m["home"] if x["WinnerID"] == x.get("HomeID") else m["away"]
+        else:
+            m["status"] = "no_result"          # e.g. "Washed Out"
+            m["note"] = status_txt or "No result"
+        m.pop("venue_url")
+        out.append(m)
+    return out
 
 
 def parse_matches(text):
@@ -137,6 +175,18 @@ MATCH CENTRE"""
     assert ms[2]["status"] == "upcoming" and ms[2]["away"] == "Diamond Creek S5"
     assert ms[3]["round"] == ms[4]["round"], "Sat 5 Dec and Sun 6 Dec must share a round"
     assert ms[0]["round"] < ms[2]["round"] < ms[3]["round"]
+    emb = json.dumps([
+        {"isBye": 0, "TimeDateRaw": "2026-10-04 13:30:00", "TimeRaw": "1:30 PM", "HomeName": "Greensborough", "AwayName": "Malvern Red",
+         "HomeID": "1", "WinnerID": "1", "HomeScore": "0", "AwayScore": "0", "MatchStatus": "Results Entered", "FinalisationString": "FINAL",
+         "VenueName": " Elder Street Reserve", "VenueEsc": "venueid%3D27876977%26"},
+        {"isBye": 0, "TimeDateRaw": "2026-10-25 13:30:00", "TimeRaw": "1:30 PM", "HomeName": "Preston", "AwayName": "Greensborough",
+         "HomeID": "2", "WinnerID": "", "HomeScore": "0", "AwayScore": "0", "MatchStatus": "Washed Out", "FinalisationString": "FINAL", "VenueName": "Elder Street Reserve"},
+        {"isBye": 0, "TimeDateRaw": "2026-11-08 13:30:00", "TimeRaw": "1:30 PM", "HomeName": "Preston", "AwayName": "Diamond Creek S5",
+         "HomeScore": "&nbsp;", "AwayScore": "&nbsp;", "MatchStatus": "", "FinalisationString": "vs", "VenueName": "Ganbu Djila Sports Park"}])
+    em = parse_embedded("<script>\n    var matches = " + emb + ";\n</script>")
+    assert [m["status"] for m in em] == ["final", "no_result", "upcoming"], em
+    assert em[0]["forfeit_winner"] == "Greensborough" and em[0]["venue"] == "Elder Street Reserve" and em[0]["venue_id"] == "27876977"
+    assert em[1]["note"] == "Washed Out" and em[2]["home_score"] is None
     print("parser self-test OK")
 
 
@@ -167,31 +217,26 @@ def main():
         b = p.chromium.launch()
         pg = b.new_page(user_agent=("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
                                     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"))
-        pg.goto(ROUNDS_URL, wait_until="networkidle", timeout=60000)
-        try:
-            pg.wait_for_selector("text=MATCH CENTRE", timeout=45000)
-        except Exception:
-            pass
+        pg.goto(ROUNDS_URL, wait_until="domcontentloaded", timeout=60000)
+        html = pg.content()
+        matches = parse_embedded(html)
         main_text = pg.inner_text("body")
-        if "MATCH CENTRE" not in main_text:
-            print("DEBUG: fixtures page had no matches. title=%r url=%s" % (pg.title(), pg.url))
-            print("DEBUG: first 600 chars of page text:\n" + main_text[:600])
         uploaded = re.search(r"Last Uploaded:\s*(.+?)\s*\|", main_text)
-        matches = parse_matches(main_text)
-        venue_links = pg.eval_on_selector_all(
-            "main a[href*='a=VENUE']", "as => as.map(a => [a.innerText.trim(), a.href])")
-        venues = scrape_venues(b, dict(venue_links))
+        if not matches:
+            print("DEBUG: no embedded matches. title=%r" % pg.title())
+        venue_links = {m["venue"]: f"https://websites.mygameday.app/comp_info.cgi?a=VENUE&venueid={m['venue_id']}&c=0-12901-0-664271-0"
+                       for m in matches if m.get("venue_id")}
+        for m in matches:
+            m.pop("venue_id", None)
+        venues = scrape_venues(b, venue_links)
         pg.goto(LADDER_URL, wait_until="networkidle", timeout=60000)
         rows = pg.eval_on_selector_all("table.stats-table tbody tr",
                                        "rs => rs.map(r => [...r.children].map(c => c.innerText.trim()))")
         b.close()
     if len(matches) < 40 or len(rows) < 6:
         sys.exit(f"Refusing to overwrite: only {len(matches)} matches / {len(rows)} ladder rows parsed")
+    matches.sort(key=lambda m: (m["date"], m["time"][-2:], m["time"], m["home"]))
     assign_rounds(matches)
-    old = json.loads(OUT.read_text()) if OUT.exists() else {}
-    credit = {(m["date"], m["home"], m["away"]): m.get("ladder_credit") for m in old.get("matches", [])}
-    for m in matches:
-        m["ladder_credit"] = credit.get((m["date"], m["home"], m["away"]))
     ladder = [dict(zip(["pos", "team", "p", "w", "l", "d", "for", "against", "pct"],
                        [int(r[0])] + [r[1]] + [int(x) for x in r[2:8]] + [r[8]])) for r in rows]
     OUT.write_text(json.dumps({

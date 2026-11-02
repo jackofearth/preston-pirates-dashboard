@@ -245,10 +245,12 @@ const ourResult=m=>{ // from our side
   return {us,them,res:us>them?"W":us<them?"L":"D",opp:home?m.away:m.home,home};
 };
 function record(){
-  let w=0,l=0,d=0;
-  ourMatches().filter(played).forEach(m=>{const r=ourResult(m).res;r==="W"?w++:r==="L"?l++:d++});
-  const wo=(CFG.washedOut||[]).filter(x=>ourMatches().some(m=>m.round===x.round&&m.status==="no_result")).length;
-  return {w,l,d:d+wo,wo};
+  let w=0,l=0,d=0,wo=0;
+  ourMatches().forEach(m=>{
+    if(played(m)){const r=ourResult(m).res;r==="W"?w++:r==="L"?l++:d++}
+    else if(m.status==="no_result"&&daysUntil(m.date)<0){d++;wo++}   // washed out: a draw in GameChanger
+  });
+  return {w,l,d,wo};
 }
 const nextMatch=()=>ourMatches().find(m=>m.status==="upcoming");
 const ladderRow=t=>GD.ladder.find(r=>r.team===t);
@@ -483,10 +485,10 @@ const venueHtml=v=>/ganbu/i.test(v)?esc(v):`<a href="${mapsUrl(v)}" target="_bla
 VIEWS.games=()=>{
   const ms=ourMatches(), n=nextMatch();
   const row=m=>{
-    const home=m.home===US(), opp=home?m.away:m.home, lr=ladderRow(opp), wo=(CFG.washedOut||[]).find(x=>x.round===m.round);
+    const home=m.home===US(), opp=home?m.away:m.home, lr=ladderRow(opp);
     let res,cls="up";
     if(played(m)){const r=ourResult(m);cls="";res=`<span class="${r.res==="W"?"w":"l"}">${r.res}</span> ${r.us}–${r.them}`}
-    else if(m.status==="no_result"&&daysUntil(m.date)<0){cls="";res=wo?"Washed out":"Not scored"}
+    else if(m.status==="no_result"&&daysUntil(m.date)<0){cls="";res=(m.note||"Not scored").replace(/^Washed Out$/,"Washed out")}
     else res=daysUntil(m.date)===0?"Today":`in ${daysUntil(m.date)}d`;
     const sub=[esc(home?"Home":"Away"),venueHtml(m.venue),esc(m.time),(!played(m)&&lr&&lr.p?esc(`${ord(lr.pos)}, ${lr.w}–${lr.l}`):null)].filter(Boolean);
     return `<div class="fx ${cls} ${n&&m===n?"is-next":""}"><div class="d num">${dLabel(m.date).split(" ").slice(1).join(" ")}<small>R${m.round}</small></div>
@@ -504,9 +506,10 @@ VIEWS.games=()=>{
 const lr={round:null,team:""};
 function matchHtml(m){
   const us=isUs(m), fin=played(m);
-  const sc=fin?`${m.home_score}–${m.away_score}`:(m.status==="no_result"?"–":"vs");
+  const sc=m.forfeit_winner?"Forfeit":fin?`${m.home_score}–${m.away_score}`:(m.status==="no_result"?"–":"vs");
   let info=`${esc(dLabel(m.date))} · ${esc(m.time)} · ${esc(m.venue)}`;
-  if(m.status==="no_result")info+=m.ladder_credit?` · Not scored. Ladder credits ${esc(m.ladder_credit)}.`:" · Not scored";
+  if(m.forfeit_winner)info+=` · Forfeit, win to ${esc(m.forfeit_winner)}`;
+  else if(m.status==="no_result")info+=` · ${esc((m.note||"Not scored").replace(/^Washed Out$/,"Washed out"))}`;
   const cls=t=>t===US()?"us mark":"";
   return `<div class="match"><div class="h ${cls(m.home)}">${esc(m.home)}</div><div class="s num">${sc}</div><div class="a ${cls(m.away)}">${esc(m.away)}</div><div class="mi">${info}</div></div>`;
 }
