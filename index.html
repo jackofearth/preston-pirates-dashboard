@@ -133,6 +133,10 @@ details.gloss summary{cursor:pointer;color:var(--muted);font-size:14px}
 .grid line{stroke:var(--line);stroke-width:1}
 .baseline{stroke:#3a4468;stroke-width:1}
 .lbl{fill:var(--ink);font:600 13px var(--font-body)}
+.chips.pick{margin:0 0 12px}
+.pbtn{cursor:pointer;color:var(--muted)}
+.pbtn:hover{color:var(--ink)}
+.pbtn[aria-pressed="true"]{background:var(--navy);color:var(--ink);border-color:#3a4f95}
 .legend{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 6px;font-size:14px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
 .tip{position:absolute;pointer-events:none;background:#0a0f1f;border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:13px;min-width:130px;box-shadow:0 6px 20px rgba(0,0,0,.45);z-index:4;display:none}
@@ -394,7 +398,7 @@ function chartBase(host,opts){
   const ticks=[];const ts=opts._step||(hi-lo)/4;for(let v=lo;v<=hi+1e-9;v+=ts)ticks.push(+v.toFixed(6));
   const grid=ticks.map(v=>`<line x1="${m.l}" x2="${W-m.r}" y1="${y(v)}" y2="${y(v)}" class="${v===lo?"baseline":""}"/>`).join("");
   const yl=ticks.map(v=>`<text x="${m.l-8}" y="${y(v)+4}" text-anchor="end">${opts.yfmt?opts.yfmt(v):v}</text>`).join("");
-  const xl=opts.cats.map((c,i)=>{const [a,...b]=c.split(" ");return `<text x="${cx(i)}" y="${H-m.b+18}" text-anchor="middle">${esc(a)}</text><text x="${cx(i)}" y="${H-m.b+33}" text-anchor="middle">${esc(b.join(" "))}</text>`}).join("");
+  const xl=opts.cats.map((c,i)=>{const [a,...b]=c.split(" ");let r=b.join(" "),mx=Math.max(5,Math.floor((cw-6)/6.4));if(r.length>mx)r=r.slice(0,mx-1).trimEnd()+"…";return `<text x="${cx(i)}" y="${H-m.b+18}" text-anchor="middle">${esc(a)}</text><text x="${cx(i)}" y="${H-m.b+33}" text-anchor="middle">${esc(r)}</text>`}).join("");
   return {W,H,m,iw,ih,cw,cx,y,lo,hi,svgOpen:`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.label)}"><g class="grid">${grid}</g><g class="axis">${yl}${xl}</g>`};
 }
 function legendHtml(series){return series.length>1?`<div class="legend">${series.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join("")}</div>`:""}
@@ -426,7 +430,7 @@ function drawLine(host,opts){
       dots+=`<circle cx="${b.cx(i)}" cy="${b.y(v)}" r="5" fill="${s.color}" stroke="var(--card)" stroke-width="2"/>`;
     });
     const li=s.vals.map((v,i)=>v!=null&&isFinite(v)?i:-1).filter(i=>i>=0).pop();
-    if(li!==undefined&&s===opts.series[0])labels=`<text class="lbl" x="${b.cx(li)}" y="${b.y(s.vals[li])-11}" text-anchor="middle">${opts.fmt(s.vals[li])}</text>`;
+    if(li!==undefined&&s===opts.series[0]&&!opts.noLabels)labels=`<text class="lbl" x="${b.cx(li)}" y="${b.y(s.vals[li])-11}" text-anchor="middle">${opts.fmt(s.vals[li])}</text>`;
     return `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}${labels}`;
   }).join("");
   host.innerHTML=legendHtml(opts.series)+`<div class="chart">${b.svgOpen}${body}<line class="cross" y1="${b.m.t}" y2="${b.H-b.m.b}" stroke="#6b7595" stroke-width="1" style="display:none"/></svg><div class="tip"></div></div>`+tableView(opts);
@@ -446,9 +450,7 @@ function drawBars(host,opts){
 const PLAYER_METRICS=[
   {k:"AVG",label:"Batting average",rate:true,fmt:v=>fmt("AVG",v),max:1,yfmt:v=>fmt("AVG",v)},
   {k:"OBP",label:"On-base percentage",rate:true,fmt:v=>fmt("OBP",v),max:1,yfmt:v=>fmt("OBP",v)},
-  {k:"QAB%",label:"Quality at-bat %",rate:true,fmt:v=>v.toFixed(0)+"%",max:100,yfmt:v=>v+"%"},
-  {k:"H",label:"Hits",fmt:v=>String(v)},{k:"RBI",label:"RBI",fmt:v=>String(v)},{k:"R",label:"Runs",fmt:v=>String(v)},
-  {k:"BB",label:"Walks",fmt:v=>String(v)},{k:"SO",label:"Strikeouts",fmt:v=>String(v)},{k:"SB",label:"Stolen bases",fmt:v=>String(v)}
+  {k:"QAB%",label:"Quality at-bat %",rate:true,fmt:v=>v.toFixed(0)+"%",max:100,yfmt:v=>v+"%"}
 ];
 const tr={player:null,metric:"AVG"};
 VIEWS.trends=()=>{
@@ -460,8 +462,8 @@ VIEWS.trends=()=>{
     <section class="panel"><h3>Team batting</h3><div id="c-team"></div></section>
   </div>
   <section class="panel" style="margin-top:14px"><h3>Player trend</h3>
-    <div class="toolbar"><select id="pl" aria-label="Player">${names.map(n=>`<option ${n===tr.player?"selected":""}>${esc(n)}</option>`).join("")}</select>
-    <select id="mt" aria-label="Stat">${PLAYER_METRICS.map(m=>`<option value="${m.k}" ${m.k===tr.metric?"selected":""}>${m.label}</option>`).join("")}</select></div>
+    <div class="toolbar"><div class="seg" role="group" aria-label="Stat">${PLAYER_METRICS.map(m=>`<button data-metric="${m.k}" aria-pressed="${m.k===tr.metric}">${m.k}</button>`).join("")}</div></div>
+    <div class="chips pick" role="group" aria-label="Player">${names.map(n=>`<button class="chip pbtn" data-player="${esc(n)}" aria-pressed="${n===tr.player}">${esc(n)}</button>`).join("")}</div>
     <div id="c-player"></div></section>`;
 };
 function drawTrends(){
@@ -470,7 +472,7 @@ function drawTrends(){
   const scored=[],allowed=[];
   gs.forEach(g=>{const m=ourMatches().find(x=>x.round===g.game&&played(x));if(m){const r=ourResult(m);scored.push(r.us);allowed.push(r.them)}else{scored.push(null);allowed.push(null)}});
   drawBars($("#c-runs"),{cats,label:"Runs scored and allowed per game",series:[{name:"Scored",color:RED,vals:scored},{name:"Allowed",color:BLUE,vals:allowed}],fmt:v=>String(v),h:240});
-  drawLine($("#c-team"),{cats,label:"Team batting average and on-base percentage per game",min:0,max:1,yfmt:v=>fmt("AVG",v),series:[{name:"AVG",color:RED,vals:gs.map(g=>g.totals.batting.AVG)},{name:"OBP",color:BLUE,vals:gs.map(g=>g.totals.batting.OBP)}],fmt:v=>fmt("AVG",v),h:240});
+  drawLine($("#c-team"),{cats,label:"Team batting average and on-base percentage per game",noLabels:true,min:0,max:1,yfmt:v=>fmt("AVG",v),series:[{name:"AVG",color:RED,vals:gs.map(g=>g.totals.batting.AVG)},{name:"OBP",color:BLUE,vals:gs.map(g=>g.totals.batting.OBP)}],fmt:v=>fmt("AVG",v),h:240});
   drawPlayer();
 }
 function drawPlayer(){
@@ -548,12 +550,12 @@ document.addEventListener("click",e=>{
   const sec=e.target.closest("[data-sec]"); if(sec){tstate.sec=sec.dataset.sec;tstate.key=sec.dataset.sec==="batting"?"AVG":"FIP";tstate.dir=sec.dataset.sec==="batting"?-1:1;rerenderStats();return}
   const al=e.target.closest("[data-all]"); if(al){tstate.all=al.dataset.all==="1";rerenderStats();return}
   const th=e.target.closest("th[data-k]"); if(th){const k=th.dataset.k;if(tstate.key===k)tstate.dir*=-1;else{tstate.key=k;tstate.dir=k==="_name"?1:-1}$("#tbl").innerHTML=statsTable();return}
+  const pm=e.target.closest("[data-metric]"); if(pm){tr.metric=pm.dataset.metric;$$("[data-metric]").forEach(b=>b.setAttribute("aria-pressed",b===pm));drawPlayer();return}
+  const pp=e.target.closest("[data-player]"); if(pp){tr.player=pp.dataset.player;$$("[data-player]").forEach(b=>b.setAttribute("aria-pressed",b===pp));drawPlayer();return}
   const pg=e.target.closest("[data-pg]"); if(pg){lr.round+=Number(pg.dataset.pg);$("#res").innerHTML=resultsHtml();return}
 });
 document.addEventListener("change",e=>{
-  if(e.target.id==="pl"){tr.player=e.target.value;drawPlayer()}
-  else if(e.target.id==="mt"){tr.metric=e.target.value;drawPlayer()}
-  else if(e.target.id==="rs"){lr.round=Number(e.target.value);$("#res").innerHTML=resultsHtml()}
+  if(e.target.id==="rs"){lr.round=Number(e.target.value);$("#res").innerHTML=resultsHtml()}
   else if(e.target.id==="ts"){lr.team=e.target.value;$("#res").innerHTML=resultsHtml()}
 });
 function rerenderStats(){$("#main").innerHTML=VIEWS.stats()}
