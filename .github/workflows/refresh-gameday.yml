@@ -4,9 +4,16 @@ on:
   schedule:
     - cron: "7 9,21 * * *"   # twice a day: 8:07am and 8:07pm Melbourne time (UTC+11)
   workflow_dispatch:
+    inputs:
+      test_alert:
+        description: "Pretend the last 3 refreshes failed (creates a TEST alert issue, then closes it)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
+  issues: write
+  actions: read
 
 jobs:
   refresh:
@@ -27,3 +34,53 @@ jobs:
           git add data/gameday.json data/stats.json data/venues.json
           git diff --cached --quiet || git commit -m "Refresh GameDay data"
           git push
+
+  # Raises one GitHub issue (GitHub emails you) after 3 failed scheduled refreshes in a row,
+  # i.e. a full day with no working update. Closes it again when a refresh succeeds.
+  alert:
+    needs: refresh
+    if: always()
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      LABEL: gameday-refresh-failing
+      THRESHOLD: "3"
+    steps:
+      - name: Raise or clear the alert
+        run: |
+          set -e
+          TEST="${{ github.event.inputs.test_alert }}"
+          RESULT="${{ needs.refresh.result }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          [ "$TEST" = "true" ] && RESULT="failure"
+
+          # leading run of failures among earlier completed scheduled runs of this workflow
+          PREV=$(gh api "repos/$REPO/actions/workflows/refresh-gameday.yml/runs?per_page=20&status=completed&event=schedule" \
+                 --jq '[.workflow_runs[] | select(.id != ${{ github.run_id }}) | .conclusion]')
+          LEAD=$(echo "$PREV" | python3 -c "
+          import json,sys
+          n=0
+          for c in json.load(sys.stdin):
+              if c=='failure': n+=1
+              else: break
+          print(n)")
+          FAILS=0
+          if [ "$RESULT" = "failure" ]; then FAILS=$((LEAD+1)); fi
+          [ "$TEST" = "true" ] && FAILS=$THRESHOLD
+          echo "result=$RESULT consecutive_failures=$FAILS"
+
+          gh label create "$LABEL" --repo "$REPO" --color B60205 --description "GameDay refresh has failed repeatedly" 2>/dev/null || true
+          OPEN=$(gh issue list --repo "$REPO" --label "$LABEL" --state open --json number --jq '.[0].number // empty')
+
+          if [ "$FAILS" -ge "$THRESHOLD" ] && [ -z "$OPEN" ]; then
+            TITLE="GameDay refresh has failed $FAILS times in a row"
+            [ "$TEST" = "true" ] && TITLE="TEST ALERT (ignore): $TITLE"
+            gh issue create --repo "$REPO" --label "$LABEL" --title "$TITLE" --body "The dashboard's twice-daily GameDay refresh has failed $FAILS times in a row, so fixtures, results and the ladder on the site may be out of date.
+
+          Latest run: $RUN_URL
+
+          Likely causes: GameDay is blocking GitHub's servers, or has changed its page. The site keeps showing the last good data. Try Actions > Refresh GameDay data > Run workflow. This issue closes itself when a refresh succeeds."
+          elif [ "$RESULT" = "success" ] && [ -n "$OPEN" ]; then
+            gh issue close "$OPEN" --repo "$REPO" --comment "A refresh succeeded ($RUN_URL). Closing."
+          fi
