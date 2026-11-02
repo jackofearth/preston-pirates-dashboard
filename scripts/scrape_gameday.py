@@ -14,6 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "gameday.json"
+VENUES_OUT = ROOT / "data" / "venues.json"
 BASE = "https://websites.mygameday.app/comp_info.cgi?c=0-12901-0-664271-0&pool=1"
 ROUNDS_URL = BASE + "&a=ROUND&round=-1"
 LADDER_URL = BASE + "&a=LADDER"
@@ -139,6 +140,25 @@ MATCH CENTRE"""
     print("parser self-test OK")
 
 
+def scrape_venues(browser, links):
+    """Each GameDay venue page has an address and a 'View Venue in Google Maps' link."""
+    out = {}
+    for name, url in links.items():
+        try:
+            page = browser.new_page()
+            page.goto(url, wait_until="domcontentloaded", timeout=45000)
+            maps = page.eval_on_selector_all("a[href*='maps.google.com']", "as => as.map(a => a.href)")
+            text = page.inner_text("main")
+            m = re.search(r"Venue Address\s*(.+?)\s*Map Reference", text, re.S)
+            page.close()
+            if maps:
+                out[name] = {"address": " ".join(m.group(1).split()) if m else "",
+                             "map": maps[0], "gameday": re.sub(r"&fID=\d+|round=\d+&", "", url)}
+        except Exception as e:  # venues are a nicety, never fail the whole refresh
+            print("venue skipped:", name, e)
+    return out
+
+
 def main():
     if "--test" in sys.argv:
         return self_test()
@@ -152,6 +172,9 @@ def main():
         main_text = pg.inner_text("main")
         uploaded = re.search(r"Last Uploaded:\s*(.+?)\s*\|", main_text)
         matches = parse_matches(main_text)
+        venue_links = pg.eval_on_selector_all(
+            "main a[href*='a=VENUE']", "as => as.map(a => [a.innerText.trim(), a.href])")
+        venues = scrape_venues(b, dict(venue_links))
         pg.goto(LADDER_URL, wait_until="networkidle", timeout=60000)
         rows = pg.eval_on_selector_all("table.stats-table tbody tr",
                                        "rs => rs.map(r => [...r.children].map(c => c.innerText.trim()))")
@@ -169,7 +192,12 @@ def main():
         "competition": "Regional North East", "season": "2026/2027 Summer",
         "uploaded": uploaded.group(1) if uploaded else None, "source": "GameDay",
         "matches": matches, "ladder": ladder}, indent=1))
-    print(f"wrote {len(matches)} matches, {len(ladder)} ladder rows")
+    if venues:
+        old_v = json.loads(VENUES_OUT.read_text()) if VENUES_OUT.exists() else {"venues": {}}
+        old_v["venues"].update(venues)
+        old_v["source"] = "GameDay venue pages (View Venue in Google Maps)"
+        VENUES_OUT.write_text(json.dumps(old_v, indent=1))
+    print(f"wrote {len(matches)} matches, {len(ladder)} ladder rows, {len(venues)} venues")
 
 
 if __name__ == "__main__":

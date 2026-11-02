@@ -219,7 +219,9 @@ const today=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth()
 const daysUntil=iso=>Math.round((parseD(iso)-today())/864e5);
 const US=()=>CFG.team;
 const isUs=m=>m.home===US()||m.away===US();
-const mapsUrl=v=>`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(v+", Victoria, Australia")}`;
+let VEN={};
+// Map links come from GameDay's own venue pages (data/venues.json); search is only a fallback.
+const mapsUrl=v=>(VEN[v]&&VEN[v].map)||`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(v+", Victoria, Australia")}`;
 
 const THREE=new Set(["AVG","OBP","SLG","OPS","BABIP","BA/RISP","BAA","BB/K","K/BF"]);
 const TWO=new Set(["ERA","WHIP","FIP","K/BB","P/IP","P/BF","PS/PA","GO/AO","BB/INN"]);
@@ -482,7 +484,7 @@ function drawPlayer(){
 
 /* ----- our games ----- */
 const gm={all:false};
-const venueHtml=v=>/ganbu/i.test(v)?esc(v):`<a href="${mapsUrl(v)}" target="_blank" rel="noopener" class="vl">${esc(v)}</a>`;
+const venueHtml=v=>/ganbu/i.test(v)?esc(v):`<a href="${mapsUrl(v)}" target="_blank" rel="noopener" class="vl" title="${esc((VEN[v]||{}).address||"")}">${esc(v)}</a>`;
 VIEWS.games=()=>{
   const ms=ourMatches(), n=nextMatch();
   const row=m=>{
@@ -575,6 +577,7 @@ async function boot(){
     $("#main").innerHTML=`<p class="err">Couldn't load the data (${esc(err.message)}). If you opened this file straight from a folder, serve it over http instead, for example <code>python3 -m http.server</code>.</p>`;
     return;
   }
+  try{VEN=(await fetch("data/venues.json",{cache:"no-cache"}).then(r=>r.json())).venues||{}}catch(_){}
   const r=record();
   $("#subtitle").textContent=`${CFG.competition} · ${CFG.season}`;
   $("#record b").textContent=`${r.w}–${r.l}–${r.d}`; $("#record").hidden=false;

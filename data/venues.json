@@ -1,0 +1,11 @@
+{
+ "source": "GameDay venue pages (View Venue in Google Maps)",
+ "venues": {
+  "Ganbu Djila Sports Park": {"address": "235 Kingsbury Drive, Macleod", "map": "https://maps.google.com/?q=-37.7287839,145.059018", "gameday": "https://websites.mygameday.app/comp_info.cgi?a=VENUE&venueid=27876998&c=0-12901-0-664271-0"},
+  "Campbell Street Reserve": {"address": "Campbell Street, Diamond Creek", "map": "https://maps.google.com/?q=-37.6781729,145.1480212", "gameday": "https://websites.mygameday.app/comp_info.cgi?a=VENUE&venueid=27877373&c=0-12901-0-664271-0"},
+  "Elder Street Reserve": {"address": "4 Manfred Street, Watsonia", "map": "https://maps.google.com/?q=-37.7143593,145.0889033", "gameday": "https://websites.mygameday.app/comp_info.cgi?a=VENUE&venueid=27876977&c=0-12901-0-664271-0"},
+  "Napier Park": {"address": "998 High Street Road, Glen Waverley", "map": "https://maps.google.com/?q=-37.8789359573451,145.19051010595703", "gameday": "https://websites.mygameday.app/comp_info.cgi?a=VENUE&venueid=27876971&c=0-12901-0-664271-0"},
+  "Police Paddock": {"address": "250 Brady Road, Endeavour Hills", "map": "https://maps.google.com/?q=-37.9562032,145.2379954", "gameday": "https://websites.mygameday.app/comp_info.cgi?a=VENUE&venueid=27876974&c=0-12901-0-664271-0"},
+  "Wadsworth Field": {"address": "458 Glenferrie Road, Kooyong", "map": "https://maps.google.com/?q=-37.8379985,145.0327801", "gameday": "https://websites.mygameday.app/comp_info.cgi?a=VENUE&venueid=27876975&c=0-12901-0-664271-0"}
+ }
+}
