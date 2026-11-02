@@ -465,6 +465,7 @@ VIEWS.trends=()=>{
     <div id="c-player"></div></section>`;
 };
 function drawTrends(){
+  lastW=Math.round($("#main").clientWidth);
   const gs=STATS.games, cats=gs.map(gameLabel);
   const scored=[],allowed=[];
   gs.forEach(g=>{const m=ourMatches().find(x=>x.round===g.game&&played(x));if(m){const r=ourResult(m);scored.push(r.us);allowed.push(r.them)}else{scored.push(null);allowed.push(null)}});
@@ -557,7 +558,11 @@ document.addEventListener("change",e=>{
 });
 function rerenderStats(){$("#main").innerHTML=VIEWS.stats()}
 window.addEventListener("hashchange",render);
-let rz;new ResizeObserver(()=>{clearTimeout(rz);rz=setTimeout(()=>{if(location.hash==="#trends"&&$("#c-runs"))drawTrends()},150)}).observe(document.body);
+let rz,lastW=0;new ResizeObserver(()=>{
+  // Redraw charts only when the available width really changes (rotation, window resize).
+  // Height-only changes (mobile address bar, open dropdowns) must not rebuild the DOM.
+  const w=Math.round($("#main").clientWidth); if(Math.abs(w-lastW)<2)return; lastW=w;
+  clearTimeout(rz);rz=setTimeout(()=>{if(location.hash==="#trends"&&$("#c-runs")&&document.activeElement.tagName!=="SELECT")drawTrends()},150)}).observe($("#main"));
 
 async function boot(){
   $("#tablist").innerHTML=TABS.map(([id,l])=>`<button class="tab" role="tab" data-t="${id}" aria-selected="false">${l}</button>`).join("");
