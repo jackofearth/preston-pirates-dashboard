@@ -73,6 +73,8 @@ h3{font:600 22px/1.2 var(--font-head);margin:0 0 8px;letter-spacing:.02em}
 /* ---------- next game ---------- */
 .next{border-left:4px solid var(--red);background:linear-gradient(90deg,rgba(225,31,38,.10),transparent 60%),var(--card)}
 .next .when{font:600 17px/1 var(--font-body);color:var(--muted);margin-bottom:8px}
+.next .where{font-size:17px}
+.divide{border:0;border-top:1px solid var(--line);margin:14px 0 12px}
 .next .vs{font:700 clamp(30px,7vw,46px)/1 var(--font-head);margin:0 0 8px}
 .next .vs small{font:500 23px var(--font-head);color:var(--muted);margin-right:6px}
 .next a{color:var(--ink)}
@@ -302,16 +304,17 @@ VIEWS.overview=()=>{
   const T=STATS.season.totals, B=T.batting, P=T.pitching;
   let nextHtml;
   if(n){
-    const home=n.home===US(), opp=home?n.away:n.home, lr=ladderRow(opp), d=daysUntil(n.date);
+    const home=n.home===US(), opp=home?n.away:n.home, lr=ladderRow(opp);
     const past=ourMatches().filter(m=>played(m)&&(m.home===opp||m.away===opp));
     nextHtml=`<section class="panel next" aria-label="Next game">
-      <div class="when num">${dLabel(n.date)} · ${esc(n.time)} · ${d<=0?"today":d===1?"tomorrow":`in ${d} days`}</div>
+      <div class="when num">${dLabel(n.date)} · ${esc(n.time)}</div>
+      <div class="where">${esc(n.venue)} · Round ${n.round}</div>
+      <hr class="divide">
       <p class="vs"><small>${home?"vs":"at"}</small>${esc(opp)}</p>
-      <div>${esc(n.venue)} · Round ${n.round}</div>
       <div class="chips">
+        <span class="chip">${past.length?`Played this season: ${past.map(m=>{const x=ourResult(m);return `${x.res} ${x.us}–${x.them}`}).join(", ")}`:"First meeting this season"}</span>
         ${lr?`<span class="chip">${ord(lr.pos)} on the ladder · ${lr.w}W ${lr.l}L${lr.d?` ${lr.d}D`:""}</span>`:""}
         ${lr&&lr.p?`<span class="chip">Scores ${(lr.for/lr.p).toFixed(1)}, allows ${(lr.against/lr.p).toFixed(1)} a game</span>`:""}
-        <span class="chip">${past.length?`Played this season: ${past.map(m=>{const x=ourResult(m);return `${x.res} ${x.us}–${x.them}`}).join(", ")}`:"First meeting this season"}</span>
       </div></section>`;
   }else nextHtml=`<section class="panel next"><h3>Season complete</h3><p class="muted">No upcoming games on GameDay.</p></section>`;
   const lastHtml=last?(()=>{const x=ourResult(last);return `<section class="panel"><h3>Last game</h3>
