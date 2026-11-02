@@ -340,7 +340,7 @@ VIEWS.leaders=()=>`
 /* ----- stats tables ----- */
 const KEYCOLS={
   batting:["GP","PA","AB","H","2B","3B","HR","RBI","R","BB","SO","SB","AVG","OBP","SLG","OPS","QAB%"],
-  pitching:["GP","GS","IP","BF","#P","H","R","ER","BB","SO","ERA","WHIP","FIP","S%","K/BB","FPS%","BAA"]
+  pitching:["FIP","S%","K/BB","SO"]
 };
 const tstate={sec:"batting",all:false,key:"AVG",dir:-1};
 function cols(sec){
@@ -544,7 +544,7 @@ document.addEventListener("click",e=>{
   const t=e.target.closest("[data-t]"); if(t){location.hash=t.dataset.t;return}
   const g=e.target.closest("[data-go]"); if(g){location.hash=g.dataset.go;return}
   const mo=e.target.closest("[data-more]"); if(mo){const c=mo.closest("[data-leader]");c.classList.toggle("open");mo.textContent=c.classList.contains("open")?"Show top 5":`Show all ${$$("li",c).length}`;return}
-  const sec=e.target.closest("[data-sec]"); if(sec){tstate.sec=sec.dataset.sec;tstate.key=sec.dataset.sec==="batting"?"AVG":"IP";tstate.dir=-1;rerenderStats();return}
+  const sec=e.target.closest("[data-sec]"); if(sec){tstate.sec=sec.dataset.sec;tstate.key=sec.dataset.sec==="batting"?"AVG":"FIP";tstate.dir=sec.dataset.sec==="batting"?-1:1;rerenderStats();return}
   const al=e.target.closest("[data-all]"); if(al){tstate.all=al.dataset.all==="1";rerenderStats();return}
   const th=e.target.closest("th[data-k]"); if(th){const k=th.dataset.k;if(tstate.key===k)tstate.dir*=-1;else{tstate.key=k;tstate.dir=k==="_name"?1:-1}$("#tbl").innerHTML=statsTable();return}
   const pg=e.target.closest("[data-pg]"); if(pg){lr.round+=Number(pg.dataset.pg);$("#res").innerHTML=resultsHtml();return}
