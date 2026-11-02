@@ -500,7 +500,7 @@ VIEWS.games=()=>{
   };
   const past=ms.filter(m=>played(m)||(m.status==="no_result"&&daysUntil(m.date)<0)), up=ms.filter(m=>!past.includes(m));
   const shown=gm.all?up:up.slice(0,5);
-  return `<h2>Our games</h2><p class="sub">${CFG.competition}, ${CFG.season}. Home games are at Ganbu Djila Sports Park. Times are as GameDay lists them.</p>
+  return `<h2>Our games</h2>
   <div class="grid g2 games"><section class="panel played"><h3>Played</h3><div class="rows">${past.map(row).join("")}</div></section>
   <section class="panel upcoming"><h3>Coming up (${up.length})</h3><div class="rows">${shown.map(row).join("")||"<p class='muted'>No games left.</p>"}</div>
   ${up.length>5?`<button class="linkbtn" data-gm>${gm.all?"Show next 5":`Show all ${up.length}`}</button>`:""}</section></div>`;
