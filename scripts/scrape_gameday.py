@@ -197,7 +197,10 @@ def scrape_venues(browser, links):
         try:
             page = browser.new_page()
             page.goto(url, wait_until="domcontentloaded", timeout=45000)
-            maps = page.eval_on_selector_all("a[href*='maps.google.com']", "as => as.map(a => a.href)")
+            html = page.content()
+            maps = re.findall(r'https?://maps\.google\.com/\?q=[-\d.,]+', html)
+            if not maps:
+                print("venue page had no map link:", name, url, "title=%r" % page.title())
             text = page.inner_text("body")
             m = re.search(r"Venue Address\s*(.+?)\s*Map Reference", text, re.S)
             page.close()
