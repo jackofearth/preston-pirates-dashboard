@@ -269,7 +269,7 @@ const LEADERS={
     {k:"SB",title:"Stolen bases",val:p=>p.batting.SB,fmt:v=>String(v),dir:-1,ctx:p=>{const c=p.batting.CS||0;return `${p.batting.SB}-for-${p.batting.SB+c}`}},
   ],
   pit:[
-    {k:"FIP",title:"FIP (lower is better)",val:p=>p.pitching.FIP,fmt:v=>fmt("FIP",v),dir:1,ctx:p=>`${fmt("IP",p.pitching.IP)} IP`},
+    {k:"FIP",title:"FIP",val:p=>p.pitching.FIP,fmt:v=>fmt("FIP",v),dir:1,ctx:p=>`${fmt("IP",p.pitching.IP)} IP`},
     {k:"S%",title:"Strike %",val:p=>p.pitching["S%"],fmt:v=>fmt("S%",v)+"%",dir:-1,ctx:p=>`${p.pitching["#P"]} pitches`},
     {k:"K/BB",title:"Strikeouts per walk",val:kbb,fmt:v=>v===Infinity?"∞":fmt("K/BB",v),dir:-1,ctx:p=>`${p.pitching.SO} K, ${p.pitching.BB} BB`},
     {k:"SO",title:"Strikeouts",val:p=>p.pitching.SO,fmt:v=>String(v),dir:-1,ctx:p=>`${fmt("IP",p.pitching.IP)} IP`},
@@ -335,7 +335,7 @@ VIEWS.overview=()=>{
 };
 
 VIEWS.leaders=()=>`
-  <h2>Leaders</h2><p class="sub">Everyone who has played is ranked, with no minimum. The small grey text shows the sample behind each number.</p>
+  <h2>Leaders</h2>
   <h3>Batting</h3><div class="grid g2" style="margin-bottom:22px">${LEADERS.bat.map(d=>leaderCard(d,battingPlayers())).join("")}</div>
   <h3>Pitching</h3><div class="grid g2">${LEADERS.pit.map(d=>leaderCard(d,pitchers())).join("")}</div>`;
 
@@ -370,15 +370,13 @@ function statsTable(){
     <details class="gloss"><summary>Glossary (${cs.length} columns)</summary><dl>${defs}</dl></details>`;
 }
 VIEWS.stats=()=>{
-  const w=STATS.warnings||[];
   return `<h2>Season stats</h2>
   <p class="sub">${STATS.games.length} games from the GameChanger export. Tap a column to sort.</p>
   <div class="toolbar">
     <div class="seg" role="group" aria-label="Stat type"><button data-sec="batting" aria-pressed="${tstate.sec==="batting"}">Batting</button><button data-sec="pitching" aria-pressed="${tstate.sec==="pitching"}">Pitching</button></div>
     <div class="seg" role="group" aria-label="Columns"><button data-all="0" aria-pressed="${!tstate.all}">Key columns</button><button data-all="1" aria-pressed="${tstate.all}">All columns</button></div>
   </div>
-  <div id="tbl">${statsTable()}</div>
-  ${w.length?`<div class="note"><b>Data check.</b> Final scores come from GameDay. GameChanger's player stats differ slightly in places:<ul style="margin:6px 0 0;padding-left:18px">${w.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}`;
+  <div id="tbl">${statsTable()}</div>`;
 };
 
 /* ----- charts ----- */
@@ -450,7 +448,7 @@ const PLAYER_METRICS=[
 const tr={player:null,metric:"AVG"};
 VIEWS.trends=()=>{
   const names=battingPlayers().map(p=>p.name).sort();
-  if(!tr.player)tr.player=names.includes("Jack Holden")?"Jack Holden":names[0];
+  if(!tr.player)tr.player=names.includes("Andrew Hart")?"Andrew Hart":names[0];
   return `<h2>Game by game</h2><p class="sub">Each point is one game. R4 was washed out.</p>
   <div class="grid g2">
     <section class="panel"><h3>Runs scored and allowed</h3><div id="c-runs"></div></section>
