@@ -193,7 +193,10 @@ MATCH CENTRE"""
 def scrape_venues(browser, links):
     """Each GameDay venue page has an address and a 'View Venue in Google Maps' link."""
     out = {}
+    known = json.loads(VENUES_OUT.read_text()).get("venues", {}) if VENUES_OUT.exists() else {}
     for name, url in links.items():
+        if name in known:      # grounds rarely move; only fetch new ones (GameDay may 403 repeat hits)
+            continue
         try:
             page = browser.new_page()
             page.goto(url, wait_until="domcontentloaded", timeout=45000)
