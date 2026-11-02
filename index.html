@@ -302,7 +302,7 @@ VIEWS.overview=()=>{
     nextHtml=`<section class="panel next" aria-label="Next game">
       <div class="when num">${dLabel(n.date)} · ${esc(n.time)} · ${d<=0?"today":d===1?"tomorrow":`in ${d} days`}</div>
       <p class="vs"><small>${home?"vs":"at"}</small>${esc(opp)}</p>
-      <div><a href="${mapsUrl(n.venue)}" target="_blank" rel="noopener">${esc(n.venue)}</a> · Round ${n.round}</div>
+      <div>${esc(n.venue)} · Round ${n.round}</div>
       <div class="chips">
         ${lr?`<span class="chip">${ord(lr.pos)} on the ladder · ${lr.w}W ${lr.l}L${lr.d?` ${lr.d}D`:""}</span>`:""}
         ${lr&&lr.p?`<span class="chip">Scores ${(lr.for/lr.p).toFixed(1)}, allows ${(lr.against/lr.p).toFixed(1)} a game</span>`:""}
@@ -312,7 +312,6 @@ VIEWS.overview=()=>{
   const lastHtml=last?(()=>{const x=ourResult(last);return `<section class="panel"><h3>Last game</h3>
      <div class="num" style="font:700 34px/1 var(--font-head)"><span style="color:${x.res==="W"?"var(--good)":"var(--red-ink)"}">${x.res}</span> ${x.us}–${x.them}</div>
      <p class="muted" style="margin:6px 0 0">${x.home?"vs":"at"} ${esc(x.opp)} · ${dLabel(last.date)}</p></section>`})():"";
-  const lead=LEADERS.bat.map(d=>{const t=rank(battingPlayers(),d).slice(0,1)[0];return t?`<div class="fig"><b class="num">${d.fmt(t.v)}</b><span>${esc(d.title)}<br>${esc(t.p.name)}<br>${esc(d.ctx(t.p))}</span></div>`:""}).join("");
   return `<div class="grid">
     <div class="stack span2">${nextHtml}</div>
     <section class="panel"><h3>Season</h3><div class="figs">
@@ -332,8 +331,6 @@ VIEWS.overview=()=>{
       <div class="fig"><b class="num">${fmt("S%",P["S%"])}%</b><span>strike %</span></div>
       <div class="fig"><b class="num">${fmt("K/BB",P.SO/P.BB)}</b><span>K/BB</span></div>
       <div class="fig"><b class="num">${P.SO}</b><span>strikeouts</span></div></div></section>
-    <section class="panel span2"><h3>Batting leaders</h3><div class="figs">${lead}</div>
-      <button class="linkbtn" data-go="leaders">All leaderboards</button></section>
   </div>`;
 };
 
@@ -510,7 +507,7 @@ const lr={round:null,team:""};
 function matchHtml(m){
   const us=isUs(m), fin=played(m);
   const sc=fin?`${m.home_score}–${m.away_score}`:(m.status==="no_result"?"–":"vs");
-  let info=`${esc(dLabel(m.date))} · ${esc(m.time)} · ${venueHtml(m.venue)}`;
+  let info=`${esc(dLabel(m.date))} · ${esc(m.time)} · ${esc(m.venue)}`;
   if(m.status==="no_result")info+=m.ladder_credit?` · Not scored. Ladder credits ${esc(m.ladder_credit)}.`:" · Not scored";
   const cls=t=>t===US()?"us mark":"";
   return `<div class="match"><div class="h ${cls(m.home)}">${esc(m.home)}</div><div class="s num">${sc}</div><div class="a ${cls(m.away)}">${esc(m.away)}</div><div class="mi">${info}</div></div>`;
