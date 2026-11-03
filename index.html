@@ -176,6 +176,8 @@ select{background:var(--card);border:1px solid var(--line);border-radius:8px;pad
 .btn{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
 .btn:hover{background:var(--card2)}
 .btn[disabled]{opacity:.4;cursor:default}
+.src{display:flex;align-items:center;gap:10px;margin-top:8px}
+.src img{border-radius:5px;flex:none}
 footer{max-width:1080px;margin:0 auto;padding:0 var(--gutter) 40px;color:var(--faint);font-size:15px}
 .err{padding:30px 0;color:var(--muted)}
 [hidden]{display:none!important}
@@ -587,7 +589,11 @@ async function boot(){
   $("#subtitle").textContent=`${CFG.competition} · ${CFG.season}`;
   $("#record b").textContent=`${r.w}–${r.l}–${r.d}`; $("#record").hidden=false;
   const lastG=STATS.games[STATS.games.length-1];
-  $("#foot").innerHTML=`<p>Fixtures, results and ladder: GameDay, updated ${esc(GD.uploaded||"")}. Player stats: GameChanger export of ${esc(STATS.built)}, through round ${lastG.game}.</p>`;
+  const lm=ourMatches().find(x=>x.round===lastG.game);
+  // GameDay stamps its page in UTC; show it in Melbourne time.
+  const gdTime=(()=>{const m=String(GD.uploaded||"").match(/(\d+)-(\w{3})-(\d{4}) (\d+):(\d+)/);if(!m)return "";const d=new Date(`${m[2]} ${m[1]}, ${m[3]} ${m[4]}:${m[5]}:00 UTC`);if(isNaN(d))return "";return new Intl.DateTimeFormat("en-AU",{timeZone:"Australia/Melbourne",weekday:"short",day:"numeric",month:"short",hour:"numeric",minute:"2-digit",hour12:true}).format(d).replace(",","").replace(/\s(am|pm)$/i,m=>m.toLowerCase())})();
+  $("#foot").innerHTML=`<div class="src"><img src="assets/gameday.svg" alt="GameDay" width="22" height="22"><span>Last updated from GameDay: ${esc(gdTime||"unknown")}</span></div>
+    <div class="src"><img src="assets/gamechanger.png" alt="GameChanger" width="22" height="22"><span>Latest data from GameChanger: game ${lastG.game}${lm?` v ${esc(short(ourResult(lm).opp))}, ${esc(dLabel(lm.date))}`:""}</span></div>`;
   render();
 }
 boot();
