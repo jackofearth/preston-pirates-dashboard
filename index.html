@@ -590,10 +590,19 @@ async function boot(){
   $("#record b").textContent=`${r.w}–${r.l}–${r.d}`; $("#record").hidden=false;
   const lastG=STATS.games[STATS.games.length-1];
   const lm=ourMatches().find(x=>x.round===lastG.game);
-  // GameDay stamps its page in UTC; show it in Melbourne time.
-  const gdTime=(()=>{const m=String(GD.uploaded||"").match(/(\d+)-(\w{3})-(\d{4}) (\d+):(\d+)/);if(!m)return "";const d=new Date(`${m[2]} ${m[1]}, ${m[3]} ${m[4]}:${m[5]}:00 UTC`);if(isNaN(d))return "";return new Intl.DateTimeFormat("en-AU",{timeZone:"Australia/Melbourne",weekday:"short",day:"numeric",month:"short",hour:"numeric",minute:"2-digit",hour12:true}).format(d).replace(",","").replace(/\s(am|pm)$/i,m=>m.toLowerCase())})();
+  // GameDay's "Last Uploaded" stamp is Melbourne wall-clock time. Show it as "6 hours ago".
+  const gdTime=(()=>{const m=String(GD.uploaded||"").match(/(\d+)-(\w{3})-(\d{4}) (\d+):(\d+)/);if(!m)return "";
+    const mo=MO.indexOf(m[2]);if(mo<0)return "";
+    const want=Date.UTC(+m[3],mo,+m[1],+m[4],+m[5]);let t=want;
+    const wall=ms=>{const p=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"Australia/Melbourne",hourCycle:"h23",year:"numeric",month:"numeric",day:"numeric",hour:"numeric",minute:"numeric"}).formatToParts(new Date(ms)).map(x=>[x.type,x.value]));return Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute)};
+    for(let i=0;i<2;i++)t-=wall(t)-want;
+    const mins=Math.max(0,Math.round((Date.now()-t)/6e4));
+    if(mins<1)return "just now";
+    if(mins<60)return `${mins} minute${mins===1?"":"s"} ago`;
+    const h=Math.round(mins/60);if(h<24)return `${h} hour${h===1?"":"s"} ago`;
+    const d=Math.floor(h/24);return d===1?"yesterday":`${d} days ago`})();
   $("#foot").innerHTML=`<div class="src"><img src="assets/gameday.svg" alt="GameDay" width="22" height="22"><span>Last updated from GameDay: ${esc(gdTime||"unknown")}</span></div>
-    <div class="src"><img src="assets/gamechanger.png" alt="GameChanger" width="22" height="22"><span>Latest data from GameChanger: game ${lastG.game}${lm?` v ${esc(short(ourResult(lm).opp))}, ${esc(dLabel(lm.date))}`:""}</span></div>`;
+    <div class="src"><img src="assets/gamechanger.png" alt="GameChanger" width="22" height="22"><span>Latest data from GameChanger: game ${lastG.game}${lm?` v ${esc(short(ourResult(lm).opp))}, ${(()=>{const n=-daysUntil(lm.date);return n<=0?"today":n===1?"yesterday":`${n} days ago`})()}`:""}</span></div>`;
   render();
 }
 boot();
