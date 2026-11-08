@@ -192,7 +192,7 @@ footer{max-width:1080px;margin:0 auto;padding:0 var(--gutter) 40px;color:var(--f
       <h1>Preston Pirates</h1>
       <p id="subtitle">VSBL Regional North East</p>
     </div>
-    <div class="record" id="record" hidden><b class="num"></b><span>W–L–D</span></div>
+    <div class="record" id="record" hidden><b class="num"></b><span>W–L</span></div>
   </div>
 </header>
 <nav class="tabs" aria-label="Sections">
@@ -252,12 +252,11 @@ const ourResult=m=>{ // from our side
   return {us,them,res:us>them?"W":us<them?"L":"D",opp:home?m.away:m.home,home};
 };
 function record(){
-  let w=0,l=0,d=0,wo=0;
+  let w=0,l=0,d=0;
   ourMatches().forEach(m=>{
     if(played(m)){const r=ourResult(m).res;r==="W"?w++:r==="L"?l++:d++}
-    else if(m.status==="no_result"&&daysUntil(m.date)<0){d++;wo++}   // washed out: a draw in GameChanger
   });
-  return {w,l,d,wo};
+  return {w,l,d};   // washed-out games are not counted
 }
 // ---- when does a game stop being "next"? ----
 // GameDay keeps a game as "upcoming" until someone enters the score, which can take hours.
@@ -480,7 +479,7 @@ const tr={player:null,metric:"AVG"};
 VIEWS.trends=()=>{
   const names=battingPlayers().map(p=>p.name).sort();
   if(!tr.player)tr.player=names.includes("Andrew Hart")?"Andrew Hart":names[0];
-  return `<h2>Game by game</h2><p class="sub">Each point is one game. R4 was washed out.</p>
+  return `<h2>Game by game</h2><p class="sub">Each point is one game.</p>
   <div class="grid g2">
     <section class="panel"><h3>Runs scored and allowed</h3><div id="c-runs"></div></section>
     <section class="panel"><h3>Team batting</h3><div id="c-team"></div></section>
@@ -609,7 +608,7 @@ async function boot(){
   try{VEN=(await fetch("data/venues.json",{cache:"no-cache"}).then(r=>r.json())).venues||{}}catch(_){}
   const r=record();
   $("#subtitle").textContent=`${CFG.competition} · ${CFG.season}`;
-  $("#record b").textContent=`${r.w}–${r.l}–${r.d}`; $("#record").hidden=false;
+  $("#record b").textContent=r.d?`${r.w}–${r.l}–${r.d}`:`${r.w}–${r.l}`; $("#record span").textContent=r.d?"W–L–D":"W–L"; $("#record").hidden=false;
   const lastG=STATS.games[STATS.games.length-1];
   const lm=ourMatches().find(x=>x.round===lastG.game);
   // GameDay's "Last Uploaded" stamp is Melbourne wall-clock time. Show it as "6 hours ago".
