@@ -259,7 +259,22 @@ function record(){
   });
   return {w,l,d,wo};
 }
-const nextMatch=()=>ourMatches().find(m=>m.status==="upcoming");
+// ---- when does a game stop being "next"? ----
+// GameDay keeps a game as "upcoming" until someone enters the score, which can take hours.
+// So a game counts as finished GAME_HOURS after its start time (Melbourne time); until the score
+// is posted it shows as "result pending" instead of staying as the next game.
+const GAME_HOURS=3;
+function melbToMs(iso,timeStr){
+  const [y,mo,d]=iso.split("-").map(Number), t=String(timeStr||"").match(/(\d+):(\d+)\s*(AM|PM)/i);
+  let h=t?+t[1]%12+(/pm/i.test(t[3])?12:0):12, mi=t?+t[2]:0;
+  const want=Date.UTC(y,mo-1,d,h,mi);let ms=want;
+  const wall=x=>{const p=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"Australia/Melbourne",hourCycle:"h23",year:"numeric",month:"numeric",day:"numeric",hour:"numeric",minute:"numeric"}).formatToParts(new Date(x)).map(q=>[q.type,q.value]));return Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute)};
+  for(let i=0;i<2;i++)ms-=wall(ms)-want;
+  return ms;
+}
+const isPending=m=>m.status==="upcoming"&&Date.now()>=melbToMs(m.date,m.time)+GAME_HOURS*3600e3;
+const isUpcoming=m=>m.status==="upcoming"&&!isPending(m);
+const nextMatch=()=>ourMatches().find(isUpcoming);
 const ladderRow=t=>GD.ladder.find(r=>r.team===t);
 const battingPlayers=()=>STATS.season.players.filter(p=>(p.batting.PA||0)>0);
 const pitchers=()=>STATS.season.players.filter(p=>(p.pitching.BF||0)>0);
@@ -303,6 +318,7 @@ const VIEWS={};
 VIEWS.overview=()=>{
   const n=nextMatch(), r=record(), us=ladderRow(US());
   const ms=ourMatches().filter(played), last=ms[ms.length-1];
+  const pend=ourMatches().filter(isPending).pop();
   const T=STATS.season.totals, B=T.batting, P=T.pitching;
   let nextHtml;
   if(n){
@@ -319,9 +335,13 @@ VIEWS.overview=()=>{
         ${lr&&lr.p?`<span class="chip">Scores ${(lr.for/lr.p).toFixed(1)}, allows ${(lr.against/lr.p).toFixed(1)} a game</span>`:""}
       </div></section>`;
   }else nextHtml=`<section class="panel next"><h3>Season complete</h3><p class="muted">No upcoming games on GameDay.</p></section>`;
-  const lastHtml=last?(()=>{const x=ourResult(last);return `<section class="panel"><h3>Last game</h3>
-     <div class="num" style="font:700 34px/1 var(--font-head)"><span style="color:${x.res==="W"?"var(--good)":"var(--red-ink)"}">${x.res}</span> ${x.us}–${x.them}</div>
-     <p class="muted" style="margin:6px 0 0">${x.home?"vs":"at"} ${esc(x.opp)} · ${dLabel(last.date)}</p></section>`})():"";
+  const lastRes=last?(()=>{const x=ourResult(last);return `<div class="num" style="font:700 34px/1 var(--font-head)"><span style="color:${x.res==="W"?"var(--good)":"var(--red-ink)"}">${x.res}</span> ${x.us}–${x.them}</div>
+     <p class="muted" style="margin:6px 0 0">${x.home?"vs":"at"} ${esc(x.opp)} · ${dLabel(last.date)}</p>`})():"";
+  const lastHtml=pend?(()=>{const home=pend.home===US(),opp=home?pend.away:pend.home;return `<section class="panel"><h3>Last game</h3>
+     <div class="num" style="font:700 30px/1.1 var(--font-head)">Result pending</div>
+     <p class="muted" style="margin:6px 0 0">${home?"vs":"at"} ${esc(opp)} · ${dLabel(pend.date)}. Waiting for the score on GameDay.</p>
+     ${last?`<p class="muted small" style="margin:10px 0 0">Before that: ${(()=>{const x=ourResult(last);return `${x.res} ${x.us}–${x.them} ${x.home?"vs":"at"} ${esc(x.opp)}`})()}</p>`:""}</section>`})()
+    :last?`<section class="panel"><h3>Last game</h3>${lastRes}</section>`:"";
   return `<div class="grid">
     <div class="stack span2">${nextHtml}</div>
     <section class="panel"><h3>Season</h3><div class="figs">
@@ -498,12 +518,13 @@ VIEWS.games=()=>{
     let res,cls="up";
     if(played(m)){const r=ourResult(m);cls="";res=`<span class="${r.res==="W"?"w":"l"}">${r.res}</span> ${r.us}–${r.them}`}
     else if(m.status==="no_result"&&daysUntil(m.date)<0){cls="";res=(m.note||"Not scored").replace(/^Washed Out$/,"Washed out")}
+    else if(isPending(m)){cls="";res="Result pending"}
     else res=daysUntil(m.date)===0?"Today":`in ${daysUntil(m.date)}d`;
-    const sub=[esc(home?"Home":"Away"),venueHtml(m.venue),esc(m.time),(!played(m)&&lr&&lr.p?esc(`${ord(lr.pos)}, ${lr.w}–${lr.l}`):null)].filter(Boolean);
+    const sub=[esc(home?"Home":"Away"),venueHtml(m.venue),esc(m.time),(!played(m)&&!isPending(m)&&lr&&lr.p?esc(`${ord(lr.pos)}, ${lr.w}–${lr.l}`):null)].filter(Boolean);
     return `<div class="fx ${cls} ${n&&m===n?"is-next":""}"><div class="d num">${dLabel(m.date).split(" ").slice(1).join(" ")}<small>R${m.round}</small></div>
       <div class="opp">${home?"vs":"at"} ${esc(opp)}<small>${sub.join(" · ")}</small></div><div class="res num">${res}</div></div>`;
   };
-  const past=ms.filter(m=>played(m)||(m.status==="no_result"&&daysUntil(m.date)<0)), up=ms.filter(m=>!past.includes(m));
+  const past=ms.filter(m=>played(m)||isPending(m)||(m.status==="no_result"&&daysUntil(m.date)<0)), up=ms.filter(m=>!past.includes(m));
   const shown=gm.all?up:up.slice(0,5);
   return `<h2>Our games</h2>
   <div class="grid g2 games"><section class="panel played"><h3>Played</h3><div class="rows">${past.map(row).join("")}</div></section>
@@ -515,16 +536,17 @@ VIEWS.games=()=>{
 const lr={round:null,team:""};
 function matchHtml(m){
   const us=isUs(m), fin=played(m);
-  const sc=m.forfeit_winner?"Forfeit":fin?`${m.home_score}–${m.away_score}`:(m.status==="no_result"?"–":"vs");
+  const sc=m.forfeit_winner?"Forfeit":fin?`${m.home_score}–${m.away_score}`:(m.status==="no_result"||isPending(m)?"–":"vs");
   let info=`${esc(dLabel(m.date))} · ${esc(m.time)} · ${esc(m.venue)}`;
   if(m.forfeit_winner)info+=` · Forfeit, win to ${esc(m.forfeit_winner)}`;
   else if(m.status==="no_result")info+=` · ${esc((m.note||"Not scored").replace(/^Washed Out$/,"Washed out"))}`;
+  else if(isPending(m))info+=" · Result pending";
   const cls=t=>t===US()?"us mark":"";
   return `<div class="match"><div class="h ${cls(m.home)}">${esc(m.home)}</div><div class="s num">${sc}</div><div class="a ${cls(m.away)}">${esc(m.away)}</div><div class="mi">${info}</div></div>`;
 }
 function resultsHtml(){
   const rounds=[...new Set(GD.matches.map(m=>m.round))].sort((a,b)=>a-b);
-  if(lr.round===null){const n=GD.matches.find(m=>m.status==="upcoming");lr.round=n?n.round:rounds[rounds.length-1]}
+  if(lr.round===null){const n=GD.matches.find(isUpcoming);lr.round=n?n.round:rounds[rounds.length-1]}
   const sel=lr.round===0?rounds:[lr.round];
   const teams=GD.ladder.map(r=>r.team).sort();
   const out=sel.map(r=>{
