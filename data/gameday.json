@@ -1,7 +1,7 @@
 {
  "competition": "Regional North East",
  "season": "2026/2027 Summer",
- "uploaded": "Sun 8-Nov-2026 11:14:55",
+ "uploaded": "Sun 8-Nov-2026 17:21:50",
  "source": "GameDay",
  "matches": [
   {
@@ -246,10 +246,10 @@
    "time": "1:30 PM",
    "home": "Preston",
    "away": "Diamond Creek S5",
-   "home_score": null,
-   "away_score": null,
+   "home_score": 19,
+   "away_score": 2,
    "venue": "Ganbu Djila Sports Park",
-   "status": "upcoming",
+   "status": "final",
    "round": 6
   },
   {
@@ -268,10 +268,10 @@
    "time": "1:30 PM",
    "home": "Waverley Red",
    "away": "Malvern Blue",
-   "home_score": null,
-   "away_score": null,
+   "home_score": 11,
+   "away_score": 3,
    "venue": "Napier Park",
-   "status": "upcoming",
+   "status": "final",
    "round": 6
   },
   {
@@ -828,25 +828,25 @@
   },
   {
    "pos": 3,
-   "team": "Preston",
-   "p": 4,
-   "w": 2,
-   "l": 2,
+   "team": "Waverley Red",
+   "p": 1,
+   "w": 1,
+   "l": 0,
    "d": 0,
-   "for": 28,
-   "against": 32,
-   "pct": "50.00"
+   "for": 11,
+   "against": 3,
+   "pct": "100.00"
   },
   {
    "pos": 4,
-   "team": "Malvern Blue",
-   "p": 4,
-   "w": 2,
+   "team": "Preston",
+   "p": 5,
+   "w": 3,
    "l": 2,
    "d": 0,
-   "for": 37,
-   "against": 28,
-   "pct": "50.00"
+   "for": 47,
+   "against": 34,
+   "pct": "60.00"
   },
   {
    "pos": 5,
@@ -861,6 +861,17 @@
   },
   {
    "pos": 6,
+   "team": "Malvern Blue",
+   "p": 5,
+   "w": 2,
+   "l": 3,
+   "d": 0,
+   "for": 40,
+   "against": 39,
+   "pct": "40.00"
+  },
+  {
+   "pos": 7,
    "team": "Diamond Creek",
    "p": 4,
    "w": 1,
@@ -871,7 +882,7 @@
    "pct": "25.00"
   },
   {
-   "pos": 7,
+   "pos": 8,
    "team": "Malvern Red",
    "p": 4,
    "w": 1,
@@ -882,25 +893,14 @@
    "pct": "25.00"
   },
   {
-   "pos": 8,
-   "team": "Diamond Creek S5",
-   "p": 4,
-   "w": 0,
-   "l": 4,
-   "d": 0,
-   "for": 16,
-   "against": 52,
-   "pct": "0.00"
-  },
-  {
    "pos": 9,
-   "team": "Upwey FTG",
-   "p": 0,
+   "team": "Diamond Creek S5",
+   "p": 5,
    "w": 0,
-   "l": 0,
+   "l": 5,
    "d": 0,
-   "for": 0,
-   "against": 0,
+   "for": 18,
+   "against": 71,
    "pct": "0.00"
   }
  ]
