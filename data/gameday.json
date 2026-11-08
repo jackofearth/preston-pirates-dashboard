@@ -1,7 +1,7 @@
 {
  "competition": "Regional North East",
  "season": "2026/2027 Summer",
- "uploaded": "Sun 8-Nov-2026 17:21:50",
+ "uploaded": "Sun 8-Nov-2026 22:06:51",
  "source": "GameDay",
  "matches": [
   {
@@ -235,10 +235,10 @@
    "time": "1:30 PM",
    "home": "Greensborough",
    "away": "Diamond Creek",
-   "home_score": null,
-   "away_score": null,
+   "home_score": 14,
+   "away_score": 2,
    "venue": "Elder Street Reserve",
-   "status": "upcoming",
+   "status": "final",
    "round": 6
   },
   {
@@ -806,6 +806,17 @@
  "ladder": [
   {
    "pos": 1,
+   "team": "Greensborough",
+   "p": 5,
+   "w": 5,
+   "l": 0,
+   "d": 0,
+   "for": 49,
+   "against": 8,
+   "pct": "100.00"
+  },
+  {
+   "pos": 2,
    "team": "Waverley Black",
    "p": 4,
    "w": 4,
@@ -813,17 +824,6 @@
    "d": 0,
    "for": 57,
    "against": 26,
-   "pct": "100.00"
-  },
-  {
-   "pos": 2,
-   "team": "Greensborough",
-   "p": 4,
-   "w": 4,
-   "l": 0,
-   "d": 0,
-   "for": 35,
-   "against": 6,
    "pct": "100.00"
   },
   {
@@ -872,17 +872,6 @@
   },
   {
    "pos": 7,
-   "team": "Diamond Creek",
-   "p": 4,
-   "w": 1,
-   "l": 3,
-   "d": 0,
-   "for": 30,
-   "against": 46,
-   "pct": "25.00"
-  },
-  {
-   "pos": 8,
    "team": "Malvern Red",
    "p": 4,
    "w": 1,
@@ -891,6 +880,17 @@
    "for": 24,
    "against": 31,
    "pct": "25.00"
+  },
+  {
+   "pos": 8,
+   "team": "Diamond Creek",
+   "p": 5,
+   "w": 1,
+   "l": 4,
+   "d": 0,
+   "for": 32,
+   "against": 60,
+   "pct": "20.00"
   },
   {
    "pos": 9,
