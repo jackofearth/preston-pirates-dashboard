@@ -1,7 +1,7 @@
 {
  "competition": "Regional North East",
  "season": "2026/2027 Summer",
- "uploaded": "Mon 9-Nov-2026 11:00:43",
+ "uploaded": "Mon 9-Nov-2026 23:48:55",
  "source": "GameDay",
  "matches": [
   {
@@ -257,10 +257,10 @@
    "time": "1:30 PM",
    "home": "South East Warriors",
    "away": "Malvern Red",
-   "home_score": null,
-   "away_score": null,
+   "home_score": 7,
+   "away_score": 3,
    "venue": "Police Paddock",
-   "status": "upcoming",
+   "status": "final",
    "round": 6
   },
   {
@@ -851,13 +851,13 @@
   {
    "pos": 5,
    "team": "South East Warriors",
-   "p": 4,
-   "w": 2,
+   "p": 5,
+   "w": 3,
    "l": 2,
    "d": 0,
-   "for": 30,
-   "against": 18,
-   "pct": "50.00"
+   "for": 37,
+   "against": 21,
+   "pct": "60.00"
   },
   {
    "pos": 6,
@@ -872,17 +872,6 @@
   },
   {
    "pos": 7,
-   "team": "Malvern Red",
-   "p": 4,
-   "w": 1,
-   "l": 3,
-   "d": 0,
-   "for": 24,
-   "against": 31,
-   "pct": "25.00"
-  },
-  {
-   "pos": 8,
    "team": "Diamond Creek",
    "p": 5,
    "w": 1,
@@ -890,6 +879,17 @@
    "d": 0,
    "for": 32,
    "against": 60,
+   "pct": "20.00"
+  },
+  {
+   "pos": 8,
+   "team": "Malvern Red",
+   "p": 5,
+   "w": 1,
+   "l": 4,
+   "d": 0,
+   "for": 27,
+   "against": 38,
    "pct": "20.00"
   },
   {
