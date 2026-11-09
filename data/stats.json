@@ -1,6 +1,6 @@
 {
  "note": "Built by scripts/build_stats.py from GameChanger CSV exports. Fielding omitted.",
- "built": "2026-11-08",
+ "built": "2026-11-09",
  "warnings": [
   "Game 1: GameDay final 5-4, GC player stats add up to 4-4",
   "Game 2: GameDay final 2-13, GC player stats add up to 2-12",
