@@ -1,7 +1,7 @@
 {
  "competition": "Regional North East",
  "season": "2026/2027 Summer",
- "uploaded": "Mon 9-Nov-2026 23:48:55",
+ "uploaded": "Tue 10-Nov-2026 09:50:17",
  "source": "GameDay",
  "matches": [
   {
@@ -474,23 +474,23 @@
   },
   {
    "date": "2026-12-13",
-   "time": "4:00 PM",
-   "home": "Diamond Creek S5",
-   "away": "Preston",
+   "time": "1:30 PM",
+   "home": "Waverley Red",
+   "away": "Waverley Black",
    "home_score": null,
    "away_score": null,
-   "venue": "Campbell Street Reserve",
+   "venue": "Napier Park",
    "status": "upcoming",
    "round": 11
   },
   {
    "date": "2026-12-13",
    "time": "4:00 PM",
-   "home": "Waverley Red",
-   "away": "Waverley Black",
+   "home": "Diamond Creek S5",
+   "away": "Preston",
    "home_score": null,
    "away_score": null,
-   "venue": "Napier Park",
+   "venue": "Campbell Street Reserve",
    "status": "upcoming",
    "round": 11
   },
@@ -529,7 +529,7 @@
   },
   {
    "date": "2026-12-20",
-   "time": "4:00 PM",
+   "time": "1:30 PM",
    "home": "Waverley Red",
    "away": "Diamond Creek S5",
    "home_score": null,
@@ -562,23 +562,23 @@
   },
   {
    "date": "2027-01-17",
-   "time": "4:00 PM",
-   "home": "Diamond Creek S5",
-   "away": "Malvern Red",
+   "time": "1:30 PM",
+   "home": "Waverley Red",
+   "away": "Greensborough",
    "home_score": null,
    "away_score": null,
-   "venue": "Campbell Street Reserve",
+   "venue": "Napier Park",
    "status": "upcoming",
    "round": 13
   },
   {
    "date": "2027-01-17",
    "time": "4:00 PM",
-   "home": "Waverley Red",
-   "away": "Greensborough",
+   "home": "Diamond Creek S5",
+   "away": "Malvern Red",
    "home_score": null,
    "away_score": null,
-   "venue": "Napier Park",
+   "venue": "Campbell Street Reserve",
    "status": "upcoming",
    "round": 13
   },
