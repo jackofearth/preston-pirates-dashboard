@@ -435,7 +435,7 @@ function attachHover(host,b,opts){
     const i=Math.max(0,Math.min(opts.cats.length-1,Math.floor((px-b.m.l)/b.cw)));
     if(px<b.m.l-10||px>b.W-b.m.r+10){leave();return}
     cross.setAttribute("x1",b.cx(i));cross.setAttribute("x2",b.cx(i));cross.style.display="";
-    tip.innerHTML=`<b>${esc(opts.cats[i])}</b>`+opts.series.map(s=>`<div><span><i style="background:${s.color}"></i>${esc(s.name)}</span><span class="num">${s.vals[i]==null?"–":opts.fmt(s.vals[i])}</span></div>`).join("");
+    tip.innerHTML=`<b>${esc(opts.cats[i])}</b>`+opts.series.map(s=>`<div><span><i style="background:${s.color}"></i>${esc(s.name)}</span><span class="num">${s.vals[i]==null?"–":(s.fmt||opts.fmt)(s.vals[i])}</span></div>`).join("");
     tip.style.display="block";
     const tw=tip.offsetWidth, left=Math.min(Math.max(4,b.cx(i)*(r.width/b.W)-tw/2),host.clientWidth-tw-4);
     tip.style.left=left+"px"; tip.style.top="6px";
@@ -495,7 +495,7 @@ function drawTrends(){
   const scored=[],allowed=[];
   gs.forEach(g=>{const m=ourMatches().find(x=>x.round===g.game&&played(x));if(m){const r=ourResult(m);scored.push(r.us);allowed.push(r.them)}else{scored.push(null);allowed.push(null)}});
   drawBars($("#c-runs"),{cats,label:"Runs scored and allowed per game",series:[{name:"Scored",color:RED,vals:scored},{name:"Allowed",color:BLUE,vals:allowed}],fmt:v=>String(v),h:240});
-  drawLine($("#c-team"),{cats,label:"Team batting average and on-base percentage per game",noLabels:true,min:0,max:1,yfmt:v=>fmt("AVG",v),series:[{name:"AVG",color:RED,vals:gs.map(g=>g.totals.batting.AVG)},{name:"OBP",color:BLUE,vals:gs.map(g=>g.totals.batting.OBP)}],fmt:v=>fmt("AVG",v),h:240});
+  drawLine($("#c-team"),{cats,label:"Team batting average and quality at-bat percentage per game",noLabels:true,min:0,max:1,yfmt:v=>fmt("AVG",v),series:[{name:"AVG",color:RED,vals:gs.map(g=>g.totals.batting.AVG)},{name:"QAB%",color:BLUE,fmt:v=>(v*100).toFixed(0)+"%",vals:gs.map(g=>g.totals.batting["QAB%"]/100)}],fmt:v=>fmt("AVG",v),h:240});
   drawPlayer();
 }
 function drawPlayer(){
