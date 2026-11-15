@@ -1,7 +1,7 @@
 {
  "competition": "Regional North East",
  "season": "2026/2027 Summer",
- "uploaded": "Sat 14-Nov-2026 20:18:19",
+ "uploaded": "Sun 15-Nov-2026 22:24:39",
  "source": "GameDay",
  "matches": [
   {
@@ -279,10 +279,10 @@
    "time": "1:30 PM",
    "home": "South East Warriors",
    "away": "Malvern Blue",
-   "home_score": null,
-   "away_score": null,
+   "home_score": 17,
+   "away_score": 13,
    "venue": "Police Paddock",
-   "status": "upcoming",
+   "status": "final",
    "round": 7
   },
   {
@@ -290,10 +290,10 @@
    "time": "1:30 PM",
    "home": "Waverley Black",
    "away": "Greensborough",
-   "home_score": null,
-   "away_score": null,
+   "home_score": 2,
+   "away_score": 14,
    "venue": "Napier Park",
-   "status": "upcoming",
+   "status": "final",
    "round": 7
   },
   {
@@ -301,10 +301,10 @@
    "time": "4:00 PM",
    "home": "Diamond Creek S5",
    "away": "Diamond Creek",
-   "home_score": null,
-   "away_score": null,
+   "home_score": 9,
+   "away_score": 9,
    "venue": "Campbell Street Reserve",
-   "status": "upcoming",
+   "status": "final",
    "round": 7
   },
   {
@@ -312,10 +312,10 @@
    "time": "4:00 PM",
    "home": "Waverley Red",
    "away": "Preston",
-   "home_score": null,
-   "away_score": null,
+   "home_score": 8,
+   "away_score": 10,
    "venue": "Napier Park",
-   "status": "upcoming",
+   "status": "final",
    "round": 7
   },
   {
@@ -807,79 +807,79 @@
   {
    "pos": 1,
    "team": "Greensborough",
-   "p": 5,
-   "w": 5,
+   "p": 6,
+   "w": 6,
    "l": 0,
    "d": 0,
-   "for": 49,
-   "against": 8,
+   "for": 63,
+   "against": 10,
    "pct": "100.00"
   },
   {
    "pos": 2,
    "team": "Waverley Black",
-   "p": 4,
+   "p": 5,
    "w": 4,
-   "l": 0,
+   "l": 1,
    "d": 0,
-   "for": 57,
-   "against": 26,
-   "pct": "100.00"
+   "for": 59,
+   "against": 40,
+   "pct": "80.00"
   },
   {
    "pos": 3,
-   "team": "Waverley Red",
-   "p": 1,
-   "w": 1,
-   "l": 0,
+   "team": "Preston",
+   "p": 6,
+   "w": 4,
+   "l": 2,
    "d": 0,
-   "for": 11,
-   "against": 3,
-   "pct": "100.00"
+   "for": 57,
+   "against": 42,
+   "pct": "66.67"
   },
   {
    "pos": 4,
-   "team": "Preston",
-   "p": 5,
-   "w": 3,
+   "team": "South East Warriors",
+   "p": 6,
+   "w": 4,
    "l": 2,
    "d": 0,
-   "for": 47,
+   "for": 54,
    "against": 34,
-   "pct": "60.00"
+   "pct": "66.67"
   },
   {
    "pos": 5,
-   "team": "South East Warriors",
-   "p": 5,
-   "w": 3,
-   "l": 2,
+   "team": "Waverley Red",
+   "p": 2,
+   "w": 1,
+   "l": 1,
    "d": 0,
-   "for": 37,
-   "against": 21,
-   "pct": "60.00"
+   "for": 19,
+   "against": 13,
+   "pct": "50.00"
   },
   {
    "pos": 6,
    "team": "Malvern Blue",
-   "p": 5,
+   "p": 6,
    "w": 2,
-   "l": 3,
+   "l": 4,
    "d": 0,
-   "for": 40,
-   "against": 39,
-   "pct": "40.00"
+   "for": 53,
+   "against": 56,
+   "pct": "33.33"
   },
   {
    "pos": 7,
    "team": "Diamond Creek",
-   "p": 5,
+   "p": 6,
    "w": 1,
    "l": 4,
-   "d": 0,
-   "for": 32,
-   "against": 60,
-   "pct": "20.00"
+   "d": 1,
+   "for": 41,
+   "against": 69,
+   "pct": "25.00"
   },
   {
    "pos": 8,
@@ -895,13 +895,13 @@
   {
    "pos": 9,
    "team": "Diamond Creek S5",
-   "p": 5,
+   "p": 6,
    "w": 0,
    "l": 5,
-   "d": 0,
-   "for": 18,
-   "against": 71,
-   "pct": "0.00"
+   "d": 1,
+   "for": 27,
+   "against": 80,
+   "pct": "8.33"
   }
  ]
 }
