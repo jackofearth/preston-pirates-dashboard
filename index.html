@@ -81,6 +81,10 @@ h3{font:600 22px/1.2 var(--font-head);margin:0 0 8px;letter-spacing:.02em}
 .soon{border-style:dashed;display:flex;align-items:center;gap:16px}
 .soon img{width:84px;height:84px;border-radius:18px;flex:none}
 .soon h3{margin-bottom:4px}
+.wx{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:17px}
+.wx[hidden]{display:none}
+.wx .sky{font:700 22px/1 var(--font-head)} .wx .m{color:var(--muted)} .wx .m b{color:var(--ink);font-weight:600}
+.wx .rain-hi b{color:var(--blue-ink,#8fb0ff)} .wx .src{flex-basis:100%;font-size:13px;color:var(--faint)} .wx .src a{color:inherit}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .chip{display:inline-flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:15px;color:var(--ink)}
 .chip.w{border-color:#2f6b55;color:var(--good)} .chip.l{border-color:#7a2a30;color:var(--red-ink)} .chip.d{color:var(--muted)}
@@ -251,6 +255,33 @@ const ourResult=m=>{ // from our side
   const home=m.home===US(), us=home?m.home_score:m.away_score, them=home?m.away_score:m.home_score;
   return {us,them,res:us>them?"W":us<them?"L":"D",opp:home?m.away:m.home,home};
 };
+// ---- weather for the next game (Open-Meteo: free, no key; forecasts reach about 16 days) ----
+const WX_CACHE={};
+const wxSky=c=>c===0?"Clear":c<=2?"Mostly sunny":c===3?"Overcast":c<=48?"Fog":c<=57?"Drizzle":c<=67?"Rain":c<=77?"Snow":c<=82?"Showers":c<=86?"Snow showers":"Thunderstorms";
+async function loadWeather(){
+  const box=$("#wx"), n=nextMatch(); if(!box||!n)return;
+  const q=((VEN[n.venue]||{}).map||"").match(/q=(-?[\d.]+),(-?[\d.]+)/); if(!q)return;
+  const days=(parseD(n.date)-new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate()))/864e5;
+  if(days>15){box.hidden=false;box.innerHTML=`<span class="m">Forecast appears about 2 weeks before the game.</span>`;return}
+  const tm=String(n.time).match(/(\d+):(\d+)\s*(AM|PM)/i); if(!tm)return;
+  let h=+tm[1]%12+(/pm/i.test(tm[3])?12:0);
+  const key=n.date+"|"+n.venue;
+  try{
+    if(!WX_CACHE[key]||Date.now()-WX_CACHE[key].t>6e5){
+      const u=`https://api.open-meteo.com/v1/forecast?latitude=${q[1]}&longitude=${q[2]}&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_gusts_10m,weather_code&timezone=Australia%2FMelbourne&start_date=${n.date}&end_date=${n.date}`;
+      WX_CACHE[key]={t:Date.now(),d:(await fetch(u).then(r=>{if(!r.ok)throw 0;return r.json()})).hourly};
+    }
+    const H=WX_CACHE[key].d, ix=[h,h+1,h+2].filter(i=>i<24);
+    const mx=a=>Math.max(...ix.map(i=>a[i])), t0=H.temperature_2m[h];
+    const rain=Math.round(mx(H.precipitation_probability)), wind=Math.round(mx(H.wind_speed_10m)), gust=Math.round(mx(H.wind_gusts_10m));
+    if(!$("#wx"))return;
+    box.hidden=false;
+    box.innerHTML=`<span class="sky">${wxSky(H.weather_code[h])} ${Math.round(t0)}°</span>
+      <span class="m ${rain>=50?"rain-hi":""}">Rain chance <b>${rain}%</b></span>
+      <span class="m">Wind <b>${wind} km/h</b>, gusts <b>${gust}</b></span>
+      <span class="src">Forecast for the first 3 hours from ${esc(n.time)} · <a href="https://open-meteo.com/" target="_blank" rel="noopener" style="white-space:nowrap">Open-Meteo</a></span>`;
+  }catch(_){box.hidden=true}
+}
 function record(){
   let w=0,l=0,d=0;
   ourMatches().forEach(m=>{
@@ -332,7 +363,8 @@ VIEWS.overview=()=>{
         <span class="chip">${past.length?`Played this season: ${past.map(m=>{const x=ourResult(m);return `${x.res} ${x.us}–${x.them}`}).join(", ")}`:"First meeting this season"}</span>
         ${lr?`<span class="chip">${ord(lr.pos)} on the ladder · ${lr.w}W ${lr.l}L${lr.d?` ${lr.d}D`:""}</span>`:""}
         ${lr&&lr.p?`<span class="chip">Scores ${(lr.for/lr.p).toFixed(1)}, allows ${(lr.against/lr.p).toFixed(1)} a game</span>`:""}
-      </div></section>`;
+      </div>
+      <div class="wx" id="wx" hidden></div></section>`;
   }else nextHtml=`<section class="panel next"><h3>Season complete</h3><p class="muted">No upcoming games on GameDay.</p></section>`;
   const lastRes=last?(()=>{const x=ourResult(last);return `<div class="num" style="font:700 34px/1 var(--font-head)"><span style="color:${x.res==="W"?"var(--good)":"var(--red-ink)"}">${x.res}</span> ${x.us}–${x.them}</div>
      <p class="muted" style="margin:6px 0 0">${x.home?"vs":"at"} ${esc(x.opp)} · ${dLabel(last.date)}</p>`})():"";
@@ -571,6 +603,7 @@ function render(){
   $$(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===tab));
   $("#main").innerHTML=VIEWS[tab]();
   if(tab==="trends")drawTrends();
+  if(tab==="overview")loadWeather();
   window.scrollTo(0,0);
 }
 document.addEventListener("click",e=>{
