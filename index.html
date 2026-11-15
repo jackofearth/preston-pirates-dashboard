@@ -85,6 +85,7 @@ h3{font:600 22px/1.2 var(--font-head);margin:0 0 8px;letter-spacing:.02em}
 .nhead .nl{min-width:0}
 .wx{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex:none;font:600 22px/1 var(--font-head);color:var(--ink)}
 .wx[hidden]{display:none}
+.wx .ico{display:flex}
 .wx .r{display:flex;align-items:center;gap:6px;white-space:nowrap}
 .wx svg{width:27px;height:27px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .wx .main{font-size:40px;gap:9px} .wx .main svg{width:48px;height:48px;stroke-width:1.6}
@@ -272,6 +273,14 @@ const WXI={
  storm:'<path d="M7 14h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 7.5 3.3 3.3 0 0 0 7 14z"/><path d="M12 14l-2 4h4l-2 4"/>',
  fog:'<path d="M4 9h16M3 13h18M6 17h12"/>',
  drop:'<path d="M12 3c3.5 4.2 6 7.2 6 10.2a6 6 0 0 1-12 0C6 10.2 8.5 7.2 12 3z"/>',};
+// Temperature colour: cold blue -> teal -> green (comfortable) -> amber -> orange -> red (hot), blended between stops.
+const TEMP_STOPS=[[8,[90,169,255]],[14,[79,209,197]],[20,[90,209,122]],[25,[230,200,74]],[30,[240,154,62]],[36,[240,71,78]]];
+function tempColor(t){
+  if(t<=TEMP_STOPS[0][0])return `rgb(${TEMP_STOPS[0][1]})`;
+  for(let i=1;i<TEMP_STOPS.length;i++){const [t1,c1]=TEMP_STOPS[i],[t0,c0]=TEMP_STOPS[i-1];
+    if(t<=t1){const f=(t-t0)/(t1-t0);return `rgb(${c0.map((v,k)=>Math.round(v+(c1[k]-v)*f))})`}}
+  return `rgb(${TEMP_STOPS[TEMP_STOPS.length-1][1]})`;
+}
 const wxIcon=c=>c===0?"sun":c<=2?"part":c===3?"cloud":c<=48?"fog":c<=67?"rain":c<=77?"cloud":c<=82?"rain":c<=86?"cloud":"storm";
 const svg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${WXI[k]}</svg>`;
 async function loadWeather(){
@@ -295,7 +304,7 @@ async function loadWeather(){
     const mmTxt=mm<0.05?"0":mm.toFixed(1).replace(/\.0$/,"");
     if(!$("#wx"))return;
     box.hidden=false;
-    box.innerHTML=`<div class="r main" title="${wxSky(H.weather_code[24+h])}, ${Math.round(t0)}°C at ${esc(n.time)}">${svg(wxIcon(H.weather_code[24+h]))}${Math.round(t0)}°</div>
+    box.innerHTML=`<div class="r main" title="${wxSky(H.weather_code[24+h])}, ${Math.round(t0)}°C at ${esc(n.time)}"><span class="ico" style="color:${tempColor(t0)}">${svg(wxIcon(H.weather_code[24+h]))}</span>${Math.round(t0)}°</div>
       <div class="r ${mm>=1?"rain-hi":""}" title="Forecast rain from 12 hours before the start to halfway through the game">${svg("drop")}${mmTxt}<small>mm</small></div>
       <div class="src"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></div>`;
   }catch(_){box.hidden=true}
