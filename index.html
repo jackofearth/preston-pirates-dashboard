@@ -280,20 +280,23 @@ async function loadWeather(){
   const days=(parseD(n.date)-new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate()))/864e5;
   if(days>15){box.hidden=false;box.innerHTML=`<span class="m">Forecast appears about 2 weeks before the game.</span>`;return}
   const tm=String(n.time).match(/(\d+):(\d+)\s*(AM|PM)/i); if(!tm)return;
-  let h=+tm[1]%12+(/pm/i.test(tm[3])?12:0);
-  const key=n.date+"|"+n.venue;
+  let h=+tm[1]%12+(/pm/i.test(tm[3])?12:0); const sH=h+(+tm[2])/60;   // start, in hours from midnight
+  const key=n.date+"|"+n.venue, prev=(d=>{d.setDate(d.getDate()-1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`})(parseD(n.date));
   try{
     if(!WX_CACHE[key]||Date.now()-WX_CACHE[key].t>6e5){
-      const u=`https://api.open-meteo.com/v1/forecast?latitude=${q[1]}&longitude=${q[2]}&hourly=temperature_2m,precipitation,weather_code&timezone=Australia%2FMelbourne&start_date=${n.date}&end_date=${n.date}`;
+      const u=`https://api.open-meteo.com/v1/forecast?latitude=${q[1]}&longitude=${q[2]}&hourly=temperature_2m,precipitation,weather_code&timezone=Australia%2FMelbourne&start_date=${prev}&end_date=${n.date}`;
       WX_CACHE[key]={t:Date.now(),d:(await fetch(u).then(r=>{if(!r.ok)throw 0;return r.json()})).hourly};
     }
-    const H=WX_CACHE[key].d, ix=[h,h+1,h+2].filter(i=>i<24);
-    const mx=a=>Math.max(...ix.map(i=>a[i])), t0=H.temperature_2m[h];
-    const mm=ix.reduce((t,i)=>t+(H.precipitation[i]||0),0), mmTxt=mm<0.05?"0":mm.toFixed(1).replace(/\.0$/,"");
+    // Hourly arrays cover the day before and the game day (48 hours); game-day hour h is index 24+h.
+    // Rain window: 12 hours before the start to halfway through a 2-hour game (start + 1h).
+    // Open-Meteo's precipitation[i] is the rain in the hour ending at i, so each hour is weighted by its overlap with the window.
+    const H=WX_CACHE[key].d, t0=H.temperature_2m[24+h], lo=24+sH-12, hi=24+sH+1;
+    let mm=0; for(let i=Math.max(1,Math.floor(lo)+1);i<=Math.min(47,Math.ceil(hi));i++)mm+=(H.precipitation[i]||0)*Math.max(0,Math.min(i,hi)-Math.max(i-1,lo));
+    const mmTxt=mm<0.05?"0":mm.toFixed(1).replace(/\.0$/,"");
     if(!$("#wx"))return;
     box.hidden=false;
-    box.innerHTML=`<div class="r main" title="${wxSky(H.weather_code[h])}, ${Math.round(t0)}°C at ${esc(n.time)}">${svg(wxIcon(H.weather_code[h]))}${Math.round(t0)}°</div>
-      <div class="r ${mm>=1?"rain-hi":""}" title="Forecast rain over the first 3 hours">${svg("drop")}${mmTxt}<small>mm</small></div>
+    box.innerHTML=`<div class="r main" title="${wxSky(H.weather_code[24+h])}, ${Math.round(t0)}°C at ${esc(n.time)}">${svg(wxIcon(H.weather_code[24+h]))}${Math.round(t0)}°</div>
+      <div class="r ${mm>=1?"rain-hi":""}" title="Forecast rain from 12 hours before the start to halfway through the game">${svg("drop")}${mmTxt}<small>mm</small></div>
       <div class="src"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></div>`;
   }catch(_){box.hidden=true}
 }
