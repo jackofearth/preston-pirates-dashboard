@@ -219,7 +219,7 @@ footer{max-width:1080px;margin:0 auto;padding:0 var(--gutter) 40px;color:var(--f
      data/gameday.json   GameDay fixtures, results, ladder (scripts/scrape_gameday.py)
      data/config.json    team name + washed-out rounds
    ============================================================ */
-const TABS=[["overview","Overview"],["trends","Trends"],["leaders","Leaders"],["stats","Stats"],["games","Our games"],["ladder","Ladder & results"]];
+const TABS=[["overview","Overview"],["trends","Trends"],["leaders","Leaders"],["stats","Stats"],["ladder","Ladder & results"]];
 const RED="#f0474e", BLUE="#6a8de6";
 let STATS, GD, CFG;
 
@@ -295,7 +295,6 @@ async function loadWeather(){
     box.hidden=false;
     box.innerHTML=`<div class="r main" title="${wxSky(H.weather_code[h])}, ${Math.round(t0)}°C at ${esc(n.time)}">${svg(wxIcon(H.weather_code[h]))}${Math.round(t0)}°</div>
       <div class="r ${rain>=50?"rain-hi":""}" title="Chance of rain in the first 3 hours">${svg("drop")}${rain}%</div>
-      <div class="r" title="Wind ${wind} km/h, gusts ${gust} km/h">${svg("wind")}${wind}<small>km/h</small></div>
       <div class="src"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></div>`;
   }catch(_){box.hidden=true}
 }
@@ -548,7 +547,7 @@ function drawPlayer(){
 /* ----- our games ----- */
 const gm={all:false};
 const venueHtml=v=>/ganbu/i.test(v)?esc(v):`<a href="${mapsUrl(v)}" target="_blank" rel="noopener" class="vl" title="${esc((VEN[v]||{}).address||"")}">${esc(v)}</a>`;
-VIEWS.games=()=>{
+function comingUpHtml(){
   const ms=ourMatches(), n=nextMatch();
   const row=m=>{
     const home=m.home===US(), opp=home?m.away:m.home, lr=ladderRow(opp);
@@ -563,11 +562,9 @@ VIEWS.games=()=>{
   };
   const past=ms.filter(m=>played(m)||isPending(m)||(m.status==="no_result"&&daysUntil(m.date)<0)), up=ms.filter(m=>!past.includes(m));
   const shown=gm.all?up:up.slice(0,5);
-  return `<h2>Our games</h2>
-  <div class="grid g2 games"><section class="panel played"><h3>Played</h3><div class="rows">${past.map(row).join("")}</div></section>
-  <section class="panel upcoming"><h3>Coming up (${up.length})</h3><div class="rows">${shown.map(row).join("")||"<p class='muted'>No games left.</p>"}</div>
-  ${up.length>5?`<button class="linkbtn" data-gm>${gm.all?"Show next 5":`Show all ${up.length}`}</button>`:""}</section></div>`;
-};
+  return `<div class="rows">${shown.map(row).join("")||"<p class='muted'>No games left.</p>"}</div>
+  ${up.length>5?`<button class="linkbtn" data-gm>${gm.all?"Show next 5":`Show all ${up.length}`}</button>`:""}`;
+}
 
 /* ----- ladder & results ----- */
 const lr={round:null,team:""};
@@ -601,11 +598,12 @@ function resultsHtml(){
 VIEWS.ladder=()=>`<h2>Ladder</h2>
   <div class="tablewrap ladder" style="max-height:none"><table><thead><tr><th style="cursor:default">Team</th>${["P","W","L","D","For","Agst","% Won"].map(h=>`<th style="cursor:default">${h}</th>`).join("")}</tr></thead>
   <tbody>${GD.ladder.map(r=>`<tr class="${r.team===US()?"us":""}"><td><span class="muted num" style="display:inline-block;width:26px">${r.pos}</span>${esc(r.team)}</td><td class="num">${r.p}</td><td class="num">${r.w}</td><td class="num">${r.l}</td><td class="num">${r.d}</td><td class="num">${r.for}</td><td class="num">${r.against}</td><td class="num">${r.pct}</td></tr>`).join("")}</tbody></table></div>
-  <h2 style="margin-top:28px">Results and fixtures</h2><div id="res">${resultsHtml()}</div>`;
+  <h2 style="margin-top:28px">Results and fixtures</h2><div id="res">${resultsHtml()}</div>
+  <h2 style="margin-top:28px">Our games coming up</h2><section class="panel upcoming" style="margin-top:10px"><div id="upc">${comingUpHtml()}</div></section>`;
 
 /* ---------- shell ---------- */
 function render(){
-  const id=(location.hash||"#overview").slice(1), tab=TABS.find(t=>t[0]===id)?id:"overview";
+  const id0=(location.hash||"#overview").slice(1), id=id0==="games"?"ladder":id0, tab=TABS.find(t=>t[0]===id)?id:"overview";
   $$(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===tab));
   $("#main").innerHTML=VIEWS[tab]();
   if(tab==="trends")drawTrends();
@@ -619,7 +617,7 @@ document.addEventListener("click",e=>{
   const sec=e.target.closest("[data-sec]"); if(sec){tstate.sec=sec.dataset.sec;tstate.key=sec.dataset.sec==="batting"?"AVG":"FIP";tstate.dir=sec.dataset.sec==="batting"?-1:1;rerenderStats();return}
   const al=e.target.closest("[data-all]"); if(al){tstate.all=al.dataset.all==="1";rerenderStats();return}
   const th=e.target.closest("th[data-k]"); if(th){const k=th.dataset.k;if(tstate.key===k)tstate.dir*=-1;else{tstate.key=k;tstate.dir=k==="_name"?1:-1}$("#tbl").innerHTML=statsTable();return}
-  const gb=e.target.closest("[data-gm]"); if(gb){gm.all=!gm.all;const y=scrollY;$("#main").innerHTML=VIEWS.games();scrollTo(0,y);return}
+  const gb=e.target.closest("[data-gm]"); if(gb){gm.all=!gm.all;const y=scrollY;$("#upc").innerHTML=comingUpHtml();scrollTo(0,y);return}
   const pg=e.target.closest("[data-pg]"); if(pg){lr.round+=Number(pg.dataset.pg);$("#res").innerHTML=resultsHtml();return}
 });
 document.addEventListener("change",e=>{
