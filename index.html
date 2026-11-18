@@ -96,7 +96,7 @@ h3{font:600 22px/1.2 var(--font-head);margin:0 0 8px;letter-spacing:.02em}
 .chip.w{border-color:#2f6b55;color:var(--good)} .chip.l{border-color:#7a2a30;color:var(--red-ink)} .chip.d{color:var(--muted)}
 
 /* ---------- stat figures ---------- */
-.figs.four{grid-template-columns:repeat(auto-fit,minmax(88px,1fr))}
+.panel h3.ph{font-size:30px;line-height:1.1;margin-bottom:12px}
 .figs.five{grid-template-columns:repeat(auto-fit,minmax(88px,1fr))}
 .figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:10px}
 .fig b{display:block;font:700 30px/1 var(--font-head)}
@@ -394,19 +394,20 @@ VIEWS.overview=()=>{
   }else nextHtml=`<section class="panel next"><h3>Season complete</h3><p class="muted">No upcoming games on GameDay.</p></section>`;
   const lastRes=last?(()=>{const x=ourResult(last);return `<div class="num" style="font:700 34px/1 var(--font-head)"><span style="color:${x.res==="W"?"var(--good)":"var(--red-ink)"}">${x.res}</span> ${x.us}–${x.them}</div>
      <p class="muted" style="margin:6px 0 0">${x.home?"vs":"at"} ${esc(x.opp)} · ${dLabel(last.date)}</p>
-     ${(g=>g?`<div class="figs four" style="margin-top:16px">
+     ${(g=>g?`<div class="figs five" style="margin-top:16px">
+      <div class="fig" aria-hidden="true" style="visibility:hidden"><b class="num">–</b><span>&nbsp;</span></div>
       <div class="fig"><b class="num">${fmt("AVG",g.totals.batting.AVG)}</b><span>team AVG</span></div>
       <div class="fig"><b class="num">${fmt("QAB%",g.totals.batting["QAB%"])}%</b><span>team QAB%</span></div>
       <div class="fig"><b class="num">${fmt("FIP",g.totals.pitching.FIP)}</b><span>team FIP</span></div>
       <div class="fig"><b class="num">${fmt("S%",g.totals.pitching["S%"])}%</b><span>team S%</span></div></div>`:`<p class="muted small" style="margin:12px 0 0">GameChanger stats for this game aren't in yet.</p>`)(STATS.games.find(g=>g.game===last.round))}`})():"";
-  const lastHtml=pend?(()=>{const home=pend.home===US(),opp=home?pend.away:pend.home;return `<section class="panel span2"><h3>Last game</h3>
+  const lastHtml=pend?(()=>{const home=pend.home===US(),opp=home?pend.away:pend.home;return `<section class="panel span2"><h3 class="ph">Last game</h3>
      <div class="num" style="font:700 30px/1.1 var(--font-head)">Result pending</div>
      <p class="muted" style="margin:6px 0 0">${home?"vs":"at"} ${esc(opp)} · ${dLabel(pend.date)}. Waiting for the score on GameDay.</p>
      ${last?`<p class="muted small" style="margin:10px 0 0">Before that: ${(()=>{const x=ourResult(last);return `${x.res} ${x.us}–${x.them} ${x.home?"vs":"at"} ${esc(x.opp)}`})()}</p>`:""}</section>`})()
-    :last?`<section class="panel span2"><h3>Last game</h3>${lastRes}</section>`:"";
+    :last?`<section class="panel span2"><h3 class="ph">Last game</h3>${lastRes}</section>`:"";
   return `<div class="grid">
     <div class="stack span2">${nextHtml}</div>
-    <section class="panel span2"><h3>Season</h3><div class="figs five">
+    <section class="panel span2"><h3 class="ph">Season</h3><div class="figs five">
       <div class="fig"><b class="num">${us?ord(us.pos):"–"}</b><span>ladder${us?` of ${GD.ladder.filter(x=>x.p>0).length}`:""}</span></div>
       <div class="fig"><b class="num">${fmt("AVG",B.AVG)}</b><span>team AVG</span></div>
       <div class="fig"><b class="num">${fmt("QAB%",B["QAB%"])}%</b><span>team QAB%</span></div>
