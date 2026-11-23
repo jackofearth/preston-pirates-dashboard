@@ -226,7 +226,7 @@ MATCH CENTRE"""
     assert ms[0]["round"] < ms[2]["round"] < ms[3]["round"]
     emb = json.dumps([
         {"isBye": 0, "TimeDateRaw": "2026-10-04 13:30:00", "TimeRaw": "1:30 PM", "HomeName": "Greensborough", "AwayName": "Malvern Red",
-         "HomeID": "1", "WinnerID": "1", "HomeScore": "0", "AwayScore": "0", "MatchStatus": "Results Entered", "FinalisationString": "FINAL",
+         "HomeID": "1", "WinnerID": 1, "HomeScore": "0", "AwayScore": "0", "MatchStatus": "Results Entered", "FinalisationString": "FINAL",
          "VenueName": " Elder Street Reserve", "VenueEsc": "venueid%3D27876977%26"},
         {"isBye": 0, "TimeDateRaw": "2026-10-25 13:30:00", "TimeRaw": "1:30 PM", "HomeName": "Preston", "AwayName": "Greensborough",
          "HomeID": "2", "WinnerID": "", "HomeScore": "0", "AwayScore": "0", "MatchStatus": "Washed Out", "FinalisationString": "FINAL", "VenueName": "Elder Street Reserve"},
@@ -235,6 +235,19 @@ MATCH CENTRE"""
     em = parse_embedded("<script>\n    var matches = " + emb + ";\n</script>")
     assert [m["status"] for m in em] == ["final", "no_result", "upcoming"], em
     assert em[0]["forfeit_winner"] == "Greensborough" and em[0]["venue"] == "Elder Street Reserve" and em[0]["venue_id"] == "27876977"
+    # a forfeit won by the AWAY team must also read correctly (live data once had int/str ID mismatches)
+    away_win = parse_embedded("<script>var matches = " + json.dumps([{"isBye": 0, "TimeDateRaw": "2026-10-11 13:30:00",
+        "TimeRaw": "1:30 PM", "HomeName": "A", "AwayName": "B", "HomeID": "5", "AwayID": "6", "WinnerID": 6,
+        "HomeScore": "0", "AwayScore": "0", "MatchStatus": "Results Entered", "FinalisationString": "FINAL"}]) + ";</script>")
+    assert away_win[0]["forfeit_winner"] == "B", away_win
+    # reconcile must flip a wrong forfeit winner so the standings match the ladder
+    ms2 = [{"status": "final", "home": "A", "away": "B", "home_score": 0, "away_score": 0, "forfeit_winner": "B"},
+           {"status": "final", "home": "A", "away": "C", "home_score": 4, "away_score": 2}]
+    lad = [{"team": "A", "p": 2, "w": 2, "l": 0, "d": 0, "for": 13, "against": 2},
+           {"team": "B", "p": 1, "w": 0, "l": 1, "d": 0, "for": 0, "against": 0},
+           {"team": "C", "p": 1, "w": 0, "l": 1, "d": 0, "for": 2, "against": 4}]
+    reconcile_forfeits(ms2, lad)
+    assert ms2[0]["forfeit_winner"] == "A", ms2
     assert em[1]["note"] == "Washed Out" and em[2]["home_score"] is None
     print("parser self-test OK")
 
