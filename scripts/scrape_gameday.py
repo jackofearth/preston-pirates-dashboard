@@ -53,6 +53,8 @@ def parse_embedded(html):
             if hs == 0 and as_ == 0 and x.get("WinnerID"):
                 # recorded as 'def.' with no runs: a forfeit; ladder gives the winner 9-0
                 m["forfeit_winner"] = m["home"] if x["WinnerID"] == x.get("HomeID") else m["away"]
+                print("DEBUG forfeit raw:", m["home"], "v", m["away"],
+                      {k: v for k, v in x.items() if "ID" in k or "Winner" in k or "Forfeit" in k})
         else:
             m["status"] = "no_result"          # e.g. "Washed Out"
             m["note"] = status_txt or "No result"
@@ -122,6 +124,53 @@ def assign_rounds(matches):
     order = {k: n + 1 for n, k in enumerate(sorted(set(keys)))}
     for m, k in zip(matches, keys):
         m["round"] = order[k]
+
+
+def standings(matches):
+    """W/L/D/For/Against per team from final matches; a forfeit gives the winner 9 For."""
+    t = {}
+    for m in matches:
+        if m["status"] != "final":
+            continue
+        hs, as_ = m["home_score"], m["away_score"]
+        if m.get("forfeit_winner"):
+            # GameDay's ladder gives the winner 9 runs For and adds nothing to anyone's Against
+            for team in (m["home"], m["away"]):
+                r = t.setdefault(team, [0, 0, 0, 0, 0])
+                if team == m["forfeit_winner"]:
+                    r[0] += 1
+                    r[3] += 9
+                else:
+                    r[1] += 1
+            continue
+        for team, f, a in ((m["home"], hs, as_), (m["away"], as_, hs)):
+            r = t.setdefault(team, [0, 0, 0, 0, 0])
+            r[3] += f
+            r[4] += a
+            r[0 if f > a else 1 if f < a else 2] += 1
+    return t
+
+
+def reconcile_forfeits(matches, ladder):
+    """The ladder is GameDay's own ruling, so it wins. If the forfeit winners read from the match
+    JSON don't reproduce it (the WinnerID/HomeID read has been wrong before), flip them until it does."""
+    import itertools
+    fm = [m for m in matches if m.get("forfeit_winner")]
+    want = {r["team"]: [r["w"], r["l"], r["d"], r["for"], r["against"]] for r in ladder if r["p"] > 0}
+    have = lambda: {k: v for k, v in standings(matches).items() if k in want}
+    if have() == want:
+        return
+    orig = [m["forfeit_winner"] for m in fm]
+    for flips in itertools.product([0, 1], repeat=len(fm)):
+        for m, o, f in zip(fm, orig, flips):
+            m["forfeit_winner"] = (m["away"] if o == m["home"] else m["home"]) if f else o
+        if have() == want:
+            print("forfeit winners corrected to match the ladder:",
+                  [(m["home"], m["away"], m["forfeit_winner"]) for m, o in zip(fm, orig) if m["forfeit_winner"] != o])
+            return
+    for m, o in zip(fm, orig):
+        m["forfeit_winner"] = o
+    print("WARNING: match results do not reproduce the GameDay ladder (no forfeit assignment fixes it)")
 
 
 def self_test():
@@ -245,6 +294,7 @@ def main():
     assign_rounds(matches)
     ladder = [dict(zip(["pos", "team", "p", "w", "l", "d", "for", "against", "pct"],
                        [int(r[0])] + [r[1]] + [int(x) for x in r[2:8]] + [r[8]])) for r in rows]
+    reconcile_forfeits(matches, ladder)
     OUT.write_text(json.dumps({
         "competition": "Regional North East", "season": "2026/2027 Summer",
         "uploaded": uploaded.group(1) if uploaded else None, "source": "GameDay",
