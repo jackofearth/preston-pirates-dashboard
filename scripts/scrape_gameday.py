@@ -52,7 +52,7 @@ def parse_embedded(html):
             m["status"] = "final"
             if hs == 0 and as_ == 0 and x.get("WinnerID"):
                 # recorded as 'def.' with no runs: a forfeit; ladder gives the winner 9-0
-                m["forfeit_winner"] = m["home"] if x["WinnerID"] == x.get("HomeID") else m["away"]
+                m["forfeit_winner"] = m["home"] if str(x["WinnerID"]) == str(x.get("HomeID")) else m["away"]
                 print("DEBUG forfeit raw:", m["home"], "v", m["away"],
                       {k: v for k, v in x.items() if "ID" in k or "Winner" in k or "Forfeit" in k})
         else:
