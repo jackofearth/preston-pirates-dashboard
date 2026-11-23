@@ -2,7 +2,11 @@ name: Refresh GameDay data
 
 on:
   schedule:
-    - cron: "7 9,21 * * *"   # twice a day: 8:07am and 8:07pm Melbourne time (UTC+11)
+    # Hourly at :07 from Sat 12:07pm to Tue 7:07pm Melbourne time (UTC+11 until daylight saving
+    # ends in early April 2027, then UTC+10, so the window slides an hour). Nothing Tue night to Sat midday.
+    - cron: "7 1-23 * * 6"   # Sat 12:07pm -> Sun 10:07am Melbourne
+    - cron: "7 * * * 0,1"    # Sun 11:07am -> Tue 10:07am Melbourne
+    - cron: "7 0-8 * * 2"    # Tue 11:07am -> 7:07pm Melbourne
   workflow_dispatch:
     inputs:
       test_alert:
@@ -24,6 +28,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install playwright && playwright install --with-deps chromium
+      - name: Scraper self-test (no network)
+        run: python3 scripts/scrape_gameday.py --test
       - run: python3 scripts/scrape_gameday.py
       - name: Rebuild stats warnings (GC vs GameDay)
         run: python3 scripts/build_stats.py
@@ -35,8 +41,8 @@ jobs:
           git diff --cached --quiet || git commit -m "Refresh GameDay data"
           git push
 
-  # Raises one GitHub issue (GitHub emails you) after 3 failed scheduled refreshes in a row,
-  # i.e. a full day with no working update. Closes it again when a refresh succeeds.
+  # Raises one GitHub issue (GitHub emails you) after 6 failed scheduled refreshes in a row,
+  # i.e. about six hours of a game window with no working update. Closes it again when a refresh succeeds.
   alert:
     needs: refresh
     if: always()
@@ -45,7 +51,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       REPO: ${{ github.repository }}
       LABEL: gameday-refresh-failing
-      THRESHOLD: "3"
+      THRESHOLD: "6"
     steps:
       - name: Raise or clear the alert
         run: |
@@ -76,7 +82,7 @@ jobs:
           if [ "$FAILS" -ge "$THRESHOLD" ] && [ -z "$OPEN" ]; then
             TITLE="GameDay refresh has failed $FAILS times in a row"
             [ "$TEST" = "true" ] && TITLE="TEST ALERT (ignore): $TITLE"
-            gh issue create --repo "$REPO" --label "$LABEL" --title "$TITLE" --body "The dashboard's twice-daily GameDay refresh has failed $FAILS times in a row, so fixtures, results and the ladder on the site may be out of date.
+            gh issue create --repo "$REPO" --label "$LABEL" --title "$TITLE" --body "The dashboard's hourly GameDay refresh has failed $FAILS times in a row, so fixtures, results and the ladder on the site may be out of date.
 
           Latest run: $RUN_URL
 

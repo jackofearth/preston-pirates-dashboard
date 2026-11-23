@@ -14,9 +14,11 @@ The game file must be a single game (GP 1), exported at the same time as the sea
 
 ## Fixtures, results and ladder (GameDay)
 
-`.github/workflows/refresh-gameday.yml` runs `scripts/scrape_gameday.py` twice a day (about 8am and 8pm Melbourne time) and commits `data/gameday.json`. If GameDay blocks GitHub's servers the job fails and the old data stays. You can also run the workflow by hand from the Actions tab.
+`.github/workflows/refresh-gameday.yml` runs `scripts/scrape_gameday.py` every hour at :07 from Saturday 12:07pm to Tuesday 7:07pm Melbourne time (nothing between Tuesday night and Saturday midday) and commits `data/gameday.json`. After the scraper self-test it also checks forfeit winners against GameDay's ladder. The window is set in UTC for Melbourne summer time (+11), so it slides an hour when daylight saving ends in April 2027. An alert issue is raised after 6 failed runs in a row. If GameDay blocks GitHub's servers the job fails and the old data stays. You can also run the workflow by hand from the Actions tab.
 
 The scraper reads the match list GameDay embeds in the page (`var matches = [...]`), not the rendered text. "Washed Out" matches are not counted in the record; 0-0 results with a winner are shown as forfeits.
+
+**GameDay data quirks (learned the hard way).** GameDay's `WinnerID` is a number and `HomeID` is text, so compare them as strings. For a forfeit GameDay's ladder gives the winner 9 runs For and adds nothing to anyone's Against (the playing conditions say 0-9). Results can be missing or briefly wrong (a forfeit placeholder was later replaced by the real score), so refresh before reasoning about the ladder, and treat un-entered games as unknown rather than assuming a winner. The scraper's self-test (`--test`) uses the real ID types, and every refresh recounts standings from the match list and corrects forfeit winners if they disagree with the ladder.
 
 ## Overview page notes
 
