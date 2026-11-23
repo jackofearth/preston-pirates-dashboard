@@ -1,7 +1,7 @@
 {
  "competition": "Regional North East",
  "season": "2026/2027 Summer",
- "uploaded": "Sun 22-Nov-2026 22:33:44",
+ "uploaded": "Mon 23-Nov-2026 11:36:13",
  "source": "GameDay",
  "matches": [
   {
@@ -323,10 +323,11 @@
    "time": "1:30 PM",
    "home": "Malvern Blue",
    "away": "Greensborough",
-   "home_score": null,
-   "away_score": null,
+   "home_score": 0,
+   "away_score": 0,
    "venue": "Wadsworth Field",
-   "status": "upcoming",
+   "status": "final",
+   "forfeit_winner": "Greensborough",
    "round": 8
   },
   {
@@ -356,10 +357,11 @@
    "time": "4:00 PM",
    "home": "Malvern Red",
    "away": "Waverley Black",
-   "home_score": null,
-   "away_score": null,
+   "home_score": 0,
+   "away_score": 0,
    "venue": "Wadsworth Field",
-   "status": "upcoming",
+   "status": "final",
+   "forfeit_winner": "Waverley Black",
    "round": 8
   },
   {
@@ -807,8 +809,8 @@
   {
    "pos": 1,
    "team": "Greensborough",
-   "p": 6,
-   "w": 6,
+   "p": 7,
+   "w": 7,
    "l": 0,
    "d": 0,
    "for": 63,
@@ -817,17 +819,6 @@
   },
   {
    "pos": 2,
-   "team": "Waverley Black",
-   "p": 5,
-   "w": 4,
-   "l": 1,
-   "d": 0,
-   "for": 59,
-   "against": 40,
-   "pct": "80.00"
-  },
-  {
-   "pos": 3,
    "team": "Preston",
    "p": 7,
    "w": 5,
@@ -838,7 +829,7 @@
    "pct": "71.43"
   },
   {
-   "pos": 4,
+   "pos": 3,
    "team": "South East Warriors",
    "p": 7,
    "w": 5,
@@ -849,14 +840,25 @@
    "pct": "71.43"
   },
   {
+   "pos": 4,
+   "team": "Waverley Black",
+   "p": 6,
+   "w": 4,
+   "l": 2,
+   "d": 0,
+   "for": 59,
+   "against": 40,
+   "pct": "66.67"
+  },
+  {
    "pos": 5,
-   "team": "Malvern Blue",
+   "team": "Malvern Red",
    "p": 6,
    "w": 2,
    "l": 4,
    "d": 0,
-   "for": 53,
-   "against": 56,
+   "for": 27,
+   "against": 38,
    "pct": "33.33"
   },
   {
@@ -872,6 +874,17 @@
   },
   {
    "pos": 7,
+   "team": "Malvern Blue",
+   "p": 7,
+   "w": 2,
+   "l": 5,
+   "d": 0,
+   "for": 53,
+   "against": 56,
+   "pct": "28.57"
+  },
+  {
+   "pos": 8,
    "team": "Diamond Creek",
    "p": 7,
    "w": 1,
@@ -880,17 +893,6 @@
    "for": 48,
    "against": 88,
    "pct": "21.43"
-  },
-  {
-   "pos": 8,
-   "team": "Malvern Red",
-   "p": 5,
-   "w": 1,
-   "l": 4,
-   "d": 0,
-   "for": 27,
-   "against": 38,
-   "pct": "20.00"
   },
   {
    "pos": 9,
