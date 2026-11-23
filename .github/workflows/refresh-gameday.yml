@@ -2,11 +2,14 @@ name: Refresh GameDay data
 
 on:
   schedule:
-    # Hourly at :07 from Sat 12:07pm to Tue 7:07pm Melbourne time (UTC+11 until daylight saving
-    # ends in early April 2027, then UTC+10, so the window slides an hour). Nothing Tue night to Sat midday.
-    - cron: "7 1-23 * * 6"   # Sat 12:07pm -> Sun 10:07am Melbourne
-    - cron: "7 * * * 0,1"    # Sun 11:07am -> Tue 10:07am Melbourne
-    - cron: "7 0-8 * * 2"    # Tue 11:07am -> 7:07pm Melbourne
+    # Hourly at :07 from Sat 12:07pm to Tue 8:07pm Melbourne time, then the old twice-a-day runs
+    # (8:07am and 8:07pm) for the rest of the week. Times are UTC for Melbourne summer time (UTC+11);
+    # when daylight saving ends in early April 2027 (UTC+10) everything slides an hour later.
+    - cron: "7 1-23 * * 6"   # Sat 12:07pm -> Sun 10:07am Melbourne (hourly)
+    - cron: "7 * * * 0,1"    # Sun 11:07am -> Tue 10:07am Melbourne (hourly)
+    - cron: "7 0-9 * * 2"    # Tue 11:07am -> 8:07pm Melbourne (hourly, last run 8:07pm)
+    - cron: "7 21 * * 2"     # Wed 8:07am Melbourne
+    - cron: "7 9,21 * * 3-5" # Wed 8:07pm, Thu 8:07am/8:07pm, Fri 8:07am/8:07pm, Sat 8:07am Melbourne
   workflow_dispatch:
     inputs:
       test_alert:

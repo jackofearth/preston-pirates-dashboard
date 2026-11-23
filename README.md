@@ -14,7 +14,7 @@ The game file must be a single game (GP 1), exported at the same time as the sea
 
 ## Fixtures, results and ladder (GameDay)
 
-`.github/workflows/refresh-gameday.yml` runs `scripts/scrape_gameday.py` every hour at :07 from Saturday 12:07pm to Tuesday 7:07pm Melbourne time (nothing between Tuesday night and Saturday midday) and commits `data/gameday.json`. After the scraper self-test it also checks forfeit winners against GameDay's ladder. The window is set in UTC for Melbourne summer time (+11), so it slides an hour when daylight saving ends in April 2027. An alert issue is raised after 6 failed runs in a row. If GameDay blocks GitHub's servers the job fails and the old data stays. You can also run the workflow by hand from the Actions tab.
+`.github/workflows/refresh-gameday.yml` runs `scripts/scrape_gameday.py` every hour at :07 from Saturday 12:07pm to Tuesday 8:07pm Melbourne time, and twice a day (8:07am and 8:07pm) for the rest of the week and commits `data/gameday.json`. After the scraper self-test it also checks forfeit winners against GameDay's ladder. The window is set in UTC for Melbourne summer time (+11), so it slides an hour when daylight saving ends in April 2027. An alert issue is raised after 6 failed runs in a row. If GameDay blocks GitHub's servers the job fails and the old data stays. You can also run the workflow by hand from the Actions tab.
 
 The scraper reads the match list GameDay embeds in the page (`var matches = [...]`), not the rendered text. "Washed Out" matches are not counted in the record; 0-0 results with a winner are shown as forfeits.
 
