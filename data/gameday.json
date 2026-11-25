@@ -1,7 +1,7 @@
 {
  "competition": "Regional North East",
  "season": "2026/2027 Summer",
- "uploaded": "Tue 24-Nov-2026 12:59:11",
+ "uploaded": "Wed 25-Nov-2026 10:55:42",
  "source": "GameDay",
  "matches": [
   {
@@ -280,7 +280,7 @@
    "home": "South East Warriors",
    "away": "Malvern Blue",
    "home_score": 17,
-   "away_score": 13,
+   "away_score": 1,
    "venue": "Police Paddock",
    "status": "final",
    "round": 7
@@ -834,7 +834,7 @@
    "l": 2,
    "d": 0,
    "for": 60,
-   "against": 37,
+   "against": 25,
    "pct": "71.43"
   },
   {
@@ -877,7 +877,7 @@
    "w": 2,
    "l": 5,
    "d": 0,
-   "for": 54,
+   "for": 42,
    "against": 75,
    "pct": "28.57"
   },
